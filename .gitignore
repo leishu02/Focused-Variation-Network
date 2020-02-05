@@ -1,4 +1,5 @@
 
 .DS_Store
 *.pkl
-*.txt
+*_pred.txt
+*_truth.txt
