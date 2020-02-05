@@ -212,7 +212,7 @@ class Model:
                     for i in range(batch_size):
                         word_list = []
                         for t in pred_y[i]:
-                            word = self.vocab.decode(t.item())
+                            word = self.reader.vocab.decode(t.item())
                             if '<go' not in word:
                                 word_list.append(t.item())
                             if word == 'EOS':
@@ -222,7 +222,7 @@ class Model:
                     text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
                     person_x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
                     person_kw_ret = {}
-                    person_kw_ret['delex_text_len'] = batch_gen_len
+                    person_kw_ret['delex_text_len'] = np.asarray(batch_gen_len)
                     person_pred = self.person_m(x=person_x, gt_y=None, mode='test', **person_kw_ret)
                     self.reader.wrap_result(turn_batch, pred_y, person_pred)
                 else:

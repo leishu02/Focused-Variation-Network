@@ -235,18 +235,19 @@ class Reader(_ReaderBase):
                     slot_seq += [v.lower()]
                 #slot_seq += ['EOS_'+s]
             k = ' '.join(slot_value.keys()) + ' ' + personality
-            tokenized_data[k].append({
-                'id': dial_id,
-                'slot_value':slot_value,
-                'slot_value_size':len(slot_value),
-                'slot_seq': slot_seq + ['EOS_A'],
-                'slot_value_seq': slot_value_seq+['EOS_A'],
-                'personality_seq': [personality, 'EOS_P'],
-                'text_seq': text + ['EOS'],
-                'delex_text_seq': delex_text + ['EOS'],
-                'personality_idx': self.personality2idx[personality],
-                'personality': personality,
-            })
+            if dial_id < 1000:
+                tokenized_data[k].append({
+                    'id': dial_id,
+                    'slot_value':slot_value,
+                    'slot_value_size':len(slot_value),
+                    'slot_seq': slot_seq + ['EOS_A'],
+                    'slot_value_seq': slot_value_seq+['EOS_A'],
+                    'personality_seq': [personality, 'EOS_P'],
+                    'text_seq': text + ['EOS'],
+                    'delex_text_seq': delex_text + ['EOS'],
+                    'personality_idx': self.personality2idx[personality],
+                    'personality': personality,
+                })
             if construct_vocab:
                 for word in slot_seq + slot_value_seq + text + delex_text:
                     self.vocab.add_item(word)
@@ -397,7 +398,7 @@ class Reader(_ReaderBase):
         random.shuffle(self.dev)
         random.shuffle(self.test)
 
-    def wrap_result(self, turn_batch, pred_y):
+    def wrap_result(self, turn_batch, pred_y, person_pred = None):
         field = ['id', 'slot_value', 'slot_seq', 'slot_value_seq', 'personality', 'delex_text', 'text',
                  'pred_delex_text', 'pred_text', 'delex_text_tokens', 'text_tokens',
                  'pred_delex_text_tokens', 'pred_text_tokens','pred_personality']
@@ -414,6 +415,9 @@ class Reader(_ReaderBase):
             entry['text'] = ' '.join([self.vocab.decode(t) for t in turn_batch['text_seq'][i]])
             entry['delex_text_tokens'] = json.dumps([self.vocab.decode(t) for t in turn_batch['delex_text_seq'][i]])
             entry['delex_text'] = ' '.join([self.vocab.decode(t) for t in turn_batch['delex_text_seq'][i]])
+            if person_pred is not None:
+                idx = np.argmax(person_pred[i])
+                entry['pred_personality'] = self.idx2personality[idx]
 
             if self.cfg.network == 'classification':
                 idx = np.argmax(pred_y[i])
