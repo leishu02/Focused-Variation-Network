@@ -400,7 +400,7 @@ class Reader(_ReaderBase):
     def wrap_result(self, turn_batch, pred_y):
         field = ['id', 'slot_value', 'slot_seq', 'slot_value_seq', 'personality', 'delex_text', 'text',
                  'pred_delex_text', 'pred_text', 'delex_text_tokens', 'text_tokens',
-                 'pred_delex_text_tokens', 'pred_text_tokens']
+                 'pred_delex_text_tokens', 'pred_text_tokens','pred_personality']
         results = []
         batch_size = len(turn_batch['id'])
         for i in range(batch_size):
@@ -422,7 +422,8 @@ class Reader(_ReaderBase):
                 word_list = []
                 for t in pred_y[i]:
                     word = self.vocab.decode(t.item())
-                    word_list.append(word)
+                    if '<go' not in word :
+                        word_list.append(word)
                     if word == 'EOS':
                         break
                 if self.cfg.remove_slot_value == True:
@@ -439,7 +440,8 @@ class Reader(_ReaderBase):
                 word_list = []
                 for t in pred_y[0][i]:
                     word = self.vocab.decode(t.item())
-                    word_list.append(word)
+                    if '<go' not in word:
+                        word_list.append(word)
                     if word == 'EOS':
                         break
                 if self.cfg.remove_slot_value == True:

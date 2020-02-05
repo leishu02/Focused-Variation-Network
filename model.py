@@ -76,7 +76,7 @@ class Model:
             kw_ret['personality_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(personality_encoding))).long(), self.cfg)
 
         if self.cfg.network == 'classification':
-            x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
+            x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
             gt_y_np = np.asarray(py_batch['personality_idx'])
             gt_y = cuda_(Variable(torch.from_numpy(gt_y_np).long()), self.cfg)
         elif 'seq2seq' in self.cfg.network:
@@ -121,8 +121,11 @@ class Model:
                     if 'VQVAE' in self.cfg.network:
                         loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss\
                             = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
+                    elif self.cfg.network == 'classification':
+                        loss = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                     else:
                         loss, network_loss, kld = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
+
                     loss.backward(retain_graph=False)
                     grad = torch.nn.utils.clip_grad_norm_(self.m.parameters(), self.cfg.grad_clip_norm)
                     optim.step()
@@ -173,22 +176,64 @@ class Model:
             self.eval(data=data)
         return res
 
+    def personality_predictor(self):
+        person_cfg = Config('personage')
+        person_cfg.init_handler('classification')
+        self.person_m = get_network(person_cfg, self.reader.vocab)
+        path = person_cfg.model_path
+        if self.cfg.cuda:
+            self.person_m = self.person_m.cuda()
+            all_state = torch.load(path)
+        else:
+            all_state = torch.load(path, map_location=torch.device('cpu'))
+        self.person_m.load_state_dict(all_state['lstd'])
+
     def eval(self, data='test'):
-        act_idx_dict, personality_idx_dict = self.getDist()
+        if self.cfg.network != 'classification':
+            self.personality_predictor()
+            self.person_m.eval()
+        if 'VQVAE' in self.cfg.network:
+            act_idx_dict, personality_idx_dict = self.getDist()
         self.m.eval()
         self.reader.result_file = None
         data_iterator = self.reader.mini_batch_iterator(data)
         mode = 'test'
         for batch_num, dial_batch in enumerate(data_iterator):
             for turn_num, turn_batch in enumerate(dial_batch):
-                x, gt_y, kw_ret = self._convert_batch(turn_batch, act_idx_dict, personality_idx_dict)
+                if 'VQVAE' in self.cfg.network:
+                    x, gt_y, kw_ret = self._convert_batch(turn_batch, act_idx_dict, personality_idx_dict)
+                else:
+                    x, gt_y, kw_ret = self._convert_batch(turn_batch)
                 pred_y = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
-                self.reader.wrap_result(turn_batch, pred_y)
+                if self.cfg.network != 'classification':
+                    batch_size = len(turn_batch['id'])
+                    batch_gen = []
+                    batch_gen_len = []
+                    for i in range(batch_size):
+                        word_list = []
+                        for t in pred_y[i]:
+                            word = self.vocab.decode(t.item())
+                            if '<go' not in word:
+                                word_list.append(t.item())
+                            if word == 'EOS':
+                                break
+                        batch_gen.append(word_list)
+                        batch_gen_len.append(len(word_list))
+                    text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
+                    person_x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
+                    person_kw_ret = {}
+                    person_kw_ret['delex_text_len'] = batch_gen_len
+                    person_pred = self.person_m(x=person_x, gt_y=None, mode='test', **person_kw_ret)
+                    self.reader.wrap_result(turn_batch, pred_y, person_pred)
+                else:
+                    self.reader.wrap_result(turn_batch, pred_y)
         if self.reader.result_file != None:
             self.reader.result_file.close()
         ev = self.EV(self.cfg)
         res = ev.run_metrics()
         self.m.train()
+        if self.cfg.network != 'classification':
+            self.person_m.train()
         return res
 
     def validate(self, data='dev'):
@@ -202,8 +247,10 @@ class Model:
                 if 'VQVAE' in self.cfg.network:
                     loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss \
                         = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
-                else:
+                elif self.cfg.VAE:
                     loss, network_loss, kld = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
+                else:
+                    loss = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                 sup_loss += loss.item()
                 sup_cnt += 1
                 if 'VQVAE' in self.cfg.network:
@@ -270,7 +317,10 @@ class Model:
     def load_model(self, path=None):
         if not path:
             path = self.cfg.model_path
-        all_state = torch.load(path)
+        if self.cfg.cuda:
+            all_state = torch.load(path)
+        else:
+            all_state = torch.load(path, map_location=torch.device('cpu'))
         self.m.load_state_dict(all_state['lstd'])
         self.base_epoch = all_state.get('epoch', 0)
 

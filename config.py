@@ -134,7 +134,7 @@ class Config:
 
     def _simple_seq2seq_init(self):
         self.VAE = True
-        self.various_go = True
+        self.various_go = False
         self.grad_clip_norm = 1.0
         self.max_turn = 100
         self.emb_size = 300
@@ -145,12 +145,12 @@ class Config:
         self.batch_size = 128
         self.dropout_rate = 0.0
         self.epoch_num = 100  # triggered by early stop
-        self.cuda = True
+        self.cuda = False
         self.early_stop_count = 30
         self.vocab_size = None
         self.remove_slot_value = True
         self.encoder_layer_num = 1
-        self.beam_search = True
+        self.beam_search = False
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
@@ -232,6 +232,9 @@ class Config:
 
 
     def _classification_init(self):
+        self.VAE = False
+        self.various_go = False
+        self.vocab_size = None
         self.grad_clip_norm = 1.0
         self.max_turn = 100
         self.emb_size = 300
@@ -239,6 +242,7 @@ class Config:
         self.hidden_size = 256 #xiujun's 60
         self.layer_num = 3
         self.bidirectional = True
+        self.remove_slot_value = True
         self.lr = 0.001
         self.lr_decay = 0.9
         self.batch_size = 32
@@ -250,6 +254,12 @@ class Config:
         self.result_path = './results/classification_'+self.domain+'.csv'
         self.input_size = 62
         self.output_size = 5 #total 5 personality
+        self.vocab_emb = './vocabs/embedding_' + self.domain+ '_classification'
+        self.glove_path = './data/glove.840B.300d.txt'
+        self.slot_max_ts = 29
+        self.text_max_ts = 62
+        self.personality_size = 5
+        self.act_size = 8
 
     def _classification_update(self):
         if self.remove_slot_value:

@@ -1,10 +1,12 @@
 import csv
 import json
-from collections import defaultdict
-import subprocess
-import os
-from multiprocessing import Pool
 import multiprocessing
+import os
+import subprocess
+from collections import defaultdict
+from multiprocessing import Pool
+from sklearn.metrics import precision_recall_fscore_support
+import numpy as np
 
 
 def work(cmd):
@@ -32,16 +34,38 @@ class Evaluator:
 
     def run_metrics(self):
         data = self.read_result_data()
-        e2e_result = self.e2e_metric(data)
-        for k, v in e2e_result.items():
-            self.metric_dict[k] = v
-        if self.cfg.remove_slot_value:
-            success_p, success_r, success_f = self.success_f1_metric(data)
-            self.metric_dict['success_precision'] = success_p
-            self.metric_dict['success_recall'] = success_r
-            self.metric_dict['success_fscore'] = success_f
-        self.dump()
-        return sum(e2e_result.values())
+        personality_labels = ['agreeable', 'disagreeable', 'conscientiousness', 'unconscientiousness', 'extravert']
+        if self.cfg.network == "classification":
+            full_report = self.classification(data, personality_labels)
+            for idx, l in enumerate(personality_labels):
+                self.metric_dict[l+'_precision'] = full_report[0][idx]
+                self.metric_dict[l+'_recall'] = full_report[1][idx]
+                self.metric_dict[l +'_fscore'] = full_report[2][idx]
+            self.metric_dict['macro_precision'] = np.mean(full_report[0])
+            self.metric_dict['macro_recall'] = np.mean(full_report[1])
+            self.metric_dict['macro_fscore'] = np.mean(full_report[2])
+            self.dump()
+            return self.metric_dict['macro_fscore']
+        else:
+            e2e_result = self.e2e_metric(data)
+            for k, v in e2e_result.items():
+                self.metric_dict[k] = v
+            if self.cfg.remove_slot_value:
+                success_p, success_r, success_f = self.success_f1_metric(data)
+                self.metric_dict['success_precision'] = success_p
+                self.metric_dict['success_recall'] = success_r
+                self.metric_dict['success_fscore'] = success_f
+            self.dump()
+            return sum(e2e_result.values())
+
+    def classification(self, data, labels):
+        pred, truth = [], []
+        for row in data:
+            pred.append(row['pred_personality'])
+            truth.append(row['personality'])
+        full_report = precision_recall_fscore_support(truth, pred, average=None, labels = labels)
+        return full_report
+
 
     def e2e_metric(self, data):
         gen, truth_ap = [], []
@@ -79,9 +103,6 @@ class Evaluator:
                     for d in truth_ap_dict[ap]:
                         outfile.write(d+'\n')
                     outfile.write('\n')
-
-
-
         with Pool(core) as p:
             ret = p.map(work, cmds)
 

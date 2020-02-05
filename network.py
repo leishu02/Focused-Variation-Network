@@ -1256,7 +1256,7 @@ class ClassificationNetwork(torch.nn.Module):
     def __init__(self, cfg, vocab):
         super(ClassificationNetwork, self).__init__()
         self.cfg = cfg
-        self.encoder = SimpleDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.layer_num,
+        self.encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.layer_num,
                                             cfg.dropout_rate, cfg)
         self.linear1 = torch.nn.Linear(in_features=2*cfg.hidden_size, out_features=cfg.hidden_size, bias=True)
         self.linear2 = torch.nn.Linear(in_features=cfg.hidden_size, out_features=cfg.output_size, bias=True)
@@ -1264,14 +1264,14 @@ class ClassificationNetwork(torch.nn.Module):
 
     def forward(self, x, gt_y, mode, **kwargs):
         text_seq = x#seqlen, batchsize
-        text_seq_len = kwargs['text_len']#batchsize
-        _enc_out, _hidden, _emb = self.encoder(text_seq, text_seq_len)
-        h = _hidden[:-1]
-        linear1_h = torch.nn.functional.relu(self.linear1(h))#x (N, *, in_features) linear1_x (N, *, out_features)
+        text_seq_len = kwargs['delex_text_len']#batchsize
+        _enc_out, (h, _c), _emb = self.encoder(text_seq, text_seq_len)
+        z = torch.cat([h[0], h[1]], dim=-1)
+        linear1_h = torch.nn.functional.relu(self.linear1(z))#x (N, *, in_features) linear1_x (N, *, out_features)
         linear1_h = torch.nn.functional.dropout(linear1_h, self.dropout_rate)
         linear2_h = self.linear2(linear1_h)
         if mode == 'test':
-            output = torch.softmax(linear2_h)
+            output = torch.softmax(linear2_h, dim=-1)
             output = output.data.cpu().numpy()
         elif mode == 'train':
             output = torch.nn.functional.cross_entropy(linear2_h, gt_y)
