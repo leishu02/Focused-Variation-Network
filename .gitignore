@@ -3,3 +3,4 @@
 *.pkl
 *_pred.txt
 *_truth.txt
+data/glove.840B.300d.txt
