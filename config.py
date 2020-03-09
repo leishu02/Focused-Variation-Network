@@ -48,7 +48,7 @@ class Config:
         self.various_go = False
         self.commitment_cost = 0.25
         self.grad_clip_norm = 1.0
-        self.max_turn = 100
+        self.max_turn = 200
         self.emb_size = 300
         self.emb_trainable = True
         self.hidden_size = 300
@@ -102,9 +102,9 @@ class Config:
         self.lr_decay = 1.0
         self.batch_size = 128
         self.dropout_rate = 0.0
-        self.epoch_num = 100  # triggered by early stop
+        self.epoch_num = 50  # triggered by early stop
         self.cuda = True
-        self.early_stop_count = 30
+        self.early_stop_count = 10
         self.vocab_size = None
         self.remove_slot_value = True
         self.encoder_layer_num = 1
@@ -122,7 +122,7 @@ class Config:
     def _simple_VQVAE_update(self):
         self.model_path = './models/simple_VQVAE_' + self.domain + '_' + self.decoder_network
         self.result_path = './results/simple_VQVAE_' + self.domain + '_' + self.decoder_network
-        self.vocab_emb = './vocabs/embedding_' + self.domain
+        self.vocab_emb = './vocabs/embedding_' + self.domain + '_' + self.network
         if self.remove_slot_value:
             self.model_path += '_delex'
             self.result_path += '_delex'
@@ -164,7 +164,7 @@ class Config:
     def _simple_seq2seq_update(self):
         self.model_path = './models/simple_seq2seq_'+self.domain
         self.result_path = './results/simple_seq2seq_' + self.domain
-        self.vocab_emb = './vocabs/embedding_' + self.domain
+        self.vocab_emb = './vocabs/embedding_' + self.domain + '_' + self.network
         if self.remove_slot_value:
             self.model_path +='_delex'
             self.result_path +='_delex'
@@ -213,7 +213,7 @@ class Config:
     def _copy_seq2seq_update(self):
         self.model_path = './models/copy_seq2seq_'+self.domain
         self.result_path = './results/copy_seq2seq_' + self.domain
-        self.vocab_emb = './vocabs/embedding_' + self.domain
+        self.vocab_emb = './vocabs/embedding_' + self.domain + '_' + self.network
         if self.remove_slot_value:
             self.model_path +='_delex'
             self.result_path +='_delex'
@@ -247,9 +247,9 @@ class Config:
         self.lr_decay = 0.9
         self.batch_size = 32
         self.dropout_rate = 0.0
-        self.epoch_num = 100  # triggered by early stop
-        self.cuda = False
-        self.early_stop_count = 100
+        self.epoch_num = 50  # triggered by early stop
+        self.cuda = True
+        self.early_stop_count = 10
         self.model_path = './models/classification_'+self.domain+'.pkl'
         self.result_path = './results/classification_'+self.domain+'.csv'
         self.input_size = 62

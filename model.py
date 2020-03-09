@@ -72,8 +72,117 @@ class Model:
                 dist = personality_idx_dict[str(i)]
                 sample = np.random.choice(self.cfg.codebook_size, 1, p=dist)
                 personality_encoding.append(sample)
+            print (len(act_encoding), len(personality_encoding))
+            print (act_encoding, personality_encoding)
             kw_ret['act_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(act_encoding))).long(), self.cfg)
             kw_ret['personality_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(personality_encoding))).long(), self.cfg)
+
+        if self.cfg.network == 'classification':
+            x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
+            gt_y_np = np.asarray(py_batch['personality_idx'])
+            gt_y = cuda_(Variable(torch.from_numpy(gt_y_np).long()), self.cfg)
+        elif 'seq2seq' in self.cfg.network:
+            if self.cfg.remove_slot_value == True:
+                x = cuda_(Variable(torch.from_numpy(slot_np).long()), self.cfg)#seqlen, batchsize
+                gt_y = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)#seqlen, batchsize
+            else:
+                x = cuda_(Variable(torch.from_numpy(slot_value_np).long()), self.cfg)#seqlen, batchsize
+                gt_y = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)#seqlen, batchsize
+        elif 'VQVAE' in self.cfg.network:
+            if self.cfg.remove_slot_value == True:
+                x = cuda_(Variable(torch.from_numpy(slot_np).long()), self.cfg)#seqlen, batchsize
+                gt_y = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)#seqlen, batchsize
+            else:
+                x = cuda_(Variable(torch.from_numpy(slot_value_np).long()), self.cfg)#seqlen, batchsize
+                gt_y = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)#seqlen, batchsize
+        else:
+            assert()
+    
+        return x, gt_y, kw_ret
+    
+    def _predict_convert_batch(self, py_batch, act_idx_dict = None, personality_idx_dict = None):
+        kw_ret = {}
+        x = None
+        gt_y = None
+        batch_size = len(py_batch['slot_seq'])
+        slot_np = pad_sequences(py_batch['slot_seq'], self.cfg.slot_max_ts, padding='post',truncating='post').transpose((1, 0))
+        personality_np = pad_sequences(py_batch['personality_seq'], self.cfg.personality_size, padding='post',truncating='post').transpose((1, 0))
+        slot_value_np = pad_sequences(py_batch['slot_value_seq'], self.cfg.slot_max_ts, padding='post',truncating='post').transpose((1, 0))  # (seqlen, batchsize)
+        text_np = pad_sequences(py_batch['text_seq'], self.cfg.text_max_ts, padding='post',truncating='post').transpose((1, 0))
+        delex_text_np = pad_sequences(py_batch['delex_text_seq'], self.cfg.text_max_ts, padding='post',truncating='post').transpose((1, 0))
+        slot_len = np.array(py_batch['slot_seq_len'])
+        personality_len = np.array(py_batch['personality_seq_len'])
+        slot_value_len = np.array(py_batch['slot_value_seq_len'])
+        text_len = np.array(py_batch['text_seq_len'])
+        delex_text_len = np.array(py_batch['delex_text_seq_len'])
+        go_np = pad_sequences(py_batch['go'], 1, padding='post',truncating='post').transpose((1, 0))
+        go = cuda_(torch.autograd.Variable(torch.from_numpy(go_np).long()), self.cfg)
+        personality_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['personality_idx'])).long()), self.cfg)
+        act_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['slot_idx'])).float()), self.cfg)
+
+        kw_ret['slot_np'] = slot_np  # seqlen, batchsize
+        kw_ret['slot_value_np'] = slot_value_np  # seqlen, batchsize
+        kw_ret['personality_np'] = personality_np  # seqlen, batchsize
+        kw_ret['personality_seq'] = cuda_(Variable(torch.from_numpy(personality_np).long()), self.cfg)  # seqlen, batchsize
+        kw_ret['text_np'] = text_np  # seqlen, batchsize
+        kw_ret['delex_text_np'] = delex_text_np  # seqlen, batchsize
+        kw_ret['slot_len'] = slot_len  # batchsize
+        kw_ret['slot_value_len'] = slot_value_len  # batchsize
+        kw_ret['personality_len'] = personality_len  # batchsize
+        kw_ret['text_len'] = text_len  # batchsize
+        kw_ret['delex_text_len'] = delex_text_len  # batchsize
+        kw_ret['go_np'] = go_np
+        kw_ret['go'] = go
+        kw_ret['personality_idx'] = personality_idx
+        kw_ret['act_idx'] = act_idx
+        
+        if act_idx_dict and personality_idx_dict:
+            act_encoding = []
+            personality_encoding = []
+            for i in py_batch['slot_idx']:
+                dist = act_idx_dict[str(i)]
+                sample = np.random.choice(self.cfg.codebook_size, 1000, p=dist)
+                act_encoding+=sample.tolist()
+            for i in py_batch['personality_idx']:
+                dist = personality_idx_dict[str(i)]
+                sample = np.random.choice(self.cfg.codebook_size, 1000, p=dist)
+                personality_encoding+=sample.tolist()
+                
+
+            ae_count = np.bincount(np.asarray(act_encoding))
+            ae_set = set(act_encoding)
+            print (ae_set)
+            most_act = np.argmax(ae_count)
+            ae_set = list(ae_set - set([most_act]))
+            print (ae_set)
+            pe_count = np.bincount(np.asarray(personality_encoding))
+            pe_set = set(personality_encoding)
+            print (pe_set)
+            most_personality = np.argmax(pe_count)
+            pe_set = list(pe_set - set([most_personality]))
+            print (pe_set)
+            act_encoding = []
+            personality_encoding = []
+            for i in range(batch_size):
+                if i < batch_size/2:
+                    act_encoding.append(np.array([most_act]))
+                    if len(pe_set) > 0:
+                        personality_encoding.append(np.array([pe_set.pop()]))
+                    else:
+                        personality_encoding.append(np.array([most_personality]))
+                else:
+                    if len(ae_set) > 0:
+                        act_encoding.append(np.array([ae.pop()]))
+                    else:
+                        act_encoding.append(np.array([most_act]))
+                    personality_encoding.append(np.array([most_personality]))
+                    
+            print (len(act_encoding), len(personality_encoding))
+            print (act_encoding, personality_encoding)
+            
+            kw_ret['act_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(act_encoding))).long(), self.cfg)
+            kw_ret['personality_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(personality_encoding))).long(), self.cfg)
+
 
         if self.cfg.network == 'classification':
             x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
@@ -188,6 +297,63 @@ class Model:
             all_state = torch.load(path, map_location=torch.device('cpu'))
         self.person_m.load_state_dict(all_state['lstd'])
 
+    def predict(self, data = 'test'):
+        if self.cfg.network != 'classification':
+            self.personality_predictor()
+            self.person_m.eval()
+        if 'VQVAE' in self.cfg.network:
+            act_idx_dict, personality_idx_dict = self.getDist()
+        self.m.eval()
+        self.reader.result_file = None
+        data_iterator = self.reader.mini_batch_iterator(data)
+        mode = 'test'
+        for batch_num, dial_batch in enumerate(data_iterator):
+            for turn_num, turn_batch in enumerate(dial_batch):
+                if 'VQVAE' in self.cfg.network:
+                    x, gt_y, kw_ret = self._predict_convert_batch(turn_batch, act_idx_dict, personality_idx_dict)
+                else:
+                    x, gt_y, kw_ret = self._predict_convert_batch(turn_batch)
+                pred_y = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
+                if self.cfg.network != 'classification':
+                    batch_size = len(turn_batch['id'])
+                    batch_gen = []
+                    batch_gen_len = []
+                    for i in range(batch_size):
+                        word_list = []
+                        if self.cfg.beam_search:
+                            for t in pred_y[0][i]:
+                                word = self.reader.vocab.decode(t.item())
+                                if '<go' not in word:
+                                    word_list.append(t.item())
+                                if word == 'EOS':
+                                    break
+                        else:
+                            for t in pred_y[i]:
+                                word = self.reader.vocab.decode(t.item())
+                                word_list.append(t.item())
+                                if word == 'EOS':
+                                    break
+                        batch_gen.append(word_list)
+                        batch_gen_len.append(len(word_list))
+                    text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
+                    person_x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
+                    person_kw_ret = {}
+                    person_kw_ret['delex_text_len'] = np.asarray(batch_gen_len)
+                    person_pred = self.person_m(x=person_x, gt_y=None, mode='test', **person_kw_ret)
+                    #self.reader.wrap_result(turn_batch, pred_y, person_pred)
+                else:
+                    pass
+                    #self.reader.wrap_result(turn_batch, pred_y)
+            break#1 loop
+        #if self.reader.result_file != None:
+        #    self.reader.result_file.close()
+        #ev = self.EV(self.cfg)
+        #res = ev.run_metrics()
+        self.m.train()
+        if self.cfg.network != 'classification':
+            self.person_m.train()
+        return None
+
     def eval(self, data='test'):
         if self.cfg.network != 'classification':
             self.personality_predictor()
@@ -211,12 +377,19 @@ class Model:
                     batch_gen_len = []
                     for i in range(batch_size):
                         word_list = []
-                        for t in pred_y[i]:
-                            word = self.reader.vocab.decode(t.item())
-                            if '<go' not in word:
+                        if self.cfg.beam_search:
+                            for t in pred_y[0][i]:
+                                word = self.reader.vocab.decode(t.item())
+                                if '<go' not in word:
+                                    word_list.append(t.item())
+                                if word == 'EOS':
+                                    break
+                        else:
+                            for t in pred_y[i]:
+                                word = self.reader.vocab.decode(t.item())
                                 word_list.append(t.item())
-                            if word == 'EOS':
-                                break
+                                if word == 'EOS':
+                                    break
                         batch_gen.append(word_list)
                         batch_gen_len.append(len(word_list))
                     text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
@@ -235,7 +408,8 @@ class Model:
         if self.cfg.network != 'classification':
             self.person_m.train()
         return res
-
+    
+    
     def validate(self, data='dev'):
         self.m.eval()
         data_iterator = self.reader.mini_batch_iterator(data)
@@ -294,6 +468,7 @@ class Model:
                 x, gt_y, kw_ret = self._convert_batch(turn_batch)   
                 act_idx = kw_ret['act_idx'].cpu().data.numpy()
                 personality_idx = kw_ret['personality_idx'].cpu().data.numpy()
+                #print (x, gt_y, kw_ret)
                 act_encoding, personality_encoding = self.m(x=x, gt_y=gt_y, mode='getDist', **kw_ret)
                 act_idxs.append(act_idx)
                 personality_idxs.append(personality_idx)
@@ -407,9 +582,9 @@ def main():
         m.load_model()
         m.run_metrics(data='test')
     elif args.mode == 'predict':
+        print ('start predicting')
         m.load_model()
-    elif args.mode == 'rl':
-        m.load_model()
+        m.predict(data = 'test')
 
 
 

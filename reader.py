@@ -235,8 +235,8 @@ class Reader(_ReaderBase):
                     slot_seq += [v.lower()]
                 #slot_seq += ['EOS_'+s]
             k = ' '.join(slot_value.keys()) + ' ' + personality
-            if dial_id < 1000:
-                tokenized_data[k].append({
+            #if dial_id < 1000:
+            tokenized_data[k].append({
                     'id': dial_id,
                     'slot_value':slot_value,
                     'slot_value_size':len(slot_value),
@@ -247,20 +247,14 @@ class Reader(_ReaderBase):
                     'delex_text_seq': delex_text + ['EOS'],
                     'personality_idx': self.personality2idx[personality],
                     'personality': personality,
-                })
+            })
             if construct_vocab:
                 for word in slot_seq + slot_value_seq + text + delex_text:
                     self.vocab.add_item(word)
         return tokenized_data
 
     def _get_encoded_data(self, tokenized_data):
-        encoded_data = {}
-        '''
-        max_slot = 0
-        max_slot_value = 0
-        max_ts = 0
-        max_delex_ts = 0
-        '''
+        encoded_data = {}   
         for ap, dial in tokenized_data.items():
             encoded_dial = []
             for turn_id, turn in enumerate(dial):
@@ -375,8 +369,22 @@ class Reader(_ReaderBase):
             for w in self.slot_values.values():
                 self.vocab.add_item(w)
 
-        tokenized_data = self._get_tokenized_data(raw_data, construct_vocab, self.cfg.remove_slot_value)
+        tokenized_data = self._get_tokenized_data(raw_data, construct_vocab, self.cfg.remove_slot_value)         
         tokenized_test_data = self._get_tokenized_data(test_data, construct_vocab, self.cfg.remove_slot_value)
+        
+        def findtargetdata(data, p):
+            keys = data.keys()
+            key_lens = [len(k.split(' ')) for k in keys]
+            max_len = max(key_lens)
+            for k, l in zip(keys, key_lens):
+                if l == max_len and p in k:
+                    print (k, p, len(data[k]))
+                    return k
+        if self.cfg.mode == 'predict':
+            k = findtargetdata(tokenized_test_data, 'extravert')
+            predict_tokenized_test_data = {}
+            predict_tokenized_test_data[k] = tokenized_test_data[k]
+                        
 
         max_variety = max(max([len(v) for v in tokenized_data.values()]), max([len(v) for v in tokenized_test_data.values()]))
         if self.cfg.various_go:
@@ -390,10 +398,16 @@ class Reader(_ReaderBase):
             self.vocab.load_vocab(self.cfg.vocab_path)
 
         encoded_data = self._get_encoded_data(tokenized_data)
-        encoded_test_data = self._get_encoded_data(tokenized_test_data)
+        if self.cfg.mode == 'predict':
+            encoded_test_data = self._get_encoded_data(predict_tokenized_test_data)
+        else:
+            encoded_test_data = self._get_encoded_data(tokenized_test_data)
 
         self.train, self.dev, _ = self._split_data(encoded_data, self.cfg.split)
-        self.test = list(encoded_test_data.values())
+        test = []
+        for ap_key, dials in encoded_test_data.items():
+            test += [[d] for d in dials]
+        self.test = test
         random.shuffle(self.train)
         random.shuffle(self.dev)
         random.shuffle(self.test)

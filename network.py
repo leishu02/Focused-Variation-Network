@@ -389,11 +389,16 @@ class VQVAE(torch.nn.Module):
         if mode == 'train' or mode == 'valid':
             loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss = self.forward_turn(x, gt_y, mode, **kwargs)
             return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
+        elif mode == 'getDist':
+            print ("forward")
+            act_encoding, personality_encoding = self.forward_turn(x, gt_y, mode, **kwargs)
+            return act_encoding, personality_encoding
         elif mode == 'test':
             pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
             return pred_y, act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
+        print ("forward turn")
         if self.cfg.remove_slot_value == True:
             x_len = kwargs['slot_len']  # batchsize
             x_np = kwargs['slot_np']  # seqlen, batchsize
@@ -413,20 +418,23 @@ class VQVAE(torch.nn.Module):
         z = torch.cat([h[0], h[1]], dim=-1)
 
         act_z = self.act_mlp(z)
-        act_vq_loss, act_quantized, act_perplexity, _ = self.act_vq_vae(act_z)
+        act_vq_loss, act_quantized, act_perplexity, act_encoding = self.act_vq_vae(act_z)
         personality_z = self.personality_mlp(z)
-        personality_vq_loss, personality_quantized, personality_perplexity, _ = self.personality_vq_vae(personality_z)
+        personality_vq_loss, personality_quantized, personality_perplexity, personality_encoding = self.personality_vq_vae(personality_z)
         quantized = torch.cat([act_quantized, personality_quantized], dim=-1)
+        if mode == 'getDist':
+            return act_encoding, personality_encoding
         decoder_c = cuda_(torch.autograd.Variable(torch.zeros(quantized.size())), self.cfg)
-        if self.cfg.decoder_network == 'LSTM':
-            last_hidden = (quantized.unsqueeze(0), decoder_c.unsqueeze(0))
-        else:
-            last_hidden = quantized.unsqueeze(0)
+ 
         text_tm1 = cuda_(torch.autograd.Variable(torch.ones(1, batch_size).long()), self.cfg)  # GO token
         text_length = gt_y.size(0)
         text_dec_proba = []
         text_dec_outs = []
         if mode == 'train':
+            if self.cfg.decoder_network == 'LSTM':
+                last_hidden = (quantized.unsqueeze(0), decoder_c.unsqueeze(0))
+            else:
+                last_hidden = quantized.unsqueeze(0)
             act_loss = self.act_predictor(act_quantized, act_idx, mode)
             personality_loss = self.personality_predictor(personality_quantized, personality_idx, mode)
             for t in range(text_length):
@@ -447,6 +455,15 @@ class VQVAE(torch.nn.Module):
             loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss
             return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
         else:
+            act_sample_idx = kwargs['act_sample_idx']
+            personality_sample_idx = kwargs['personality_sample_idx']
+            act_sample_emb = self.act_vq_vae._embedding(act_sample_idx)
+            personality_sample_emb = self.personality_vq_vae._embedding(personality_sample_idx)
+            sample_quantized = torch.cat([act_sample_emb, personality_sample_emb], dim=-1)
+            if self.cfg.decoder_network == 'LSTM':
+                last_hidden = (sample_quantized.transpose(0, 1), decoder_c.unsqueeze(0))
+            else:
+                last_hidden = quantized.transpose(0, 1)
             act_pred = self.act_predictor(act_quantized, act_idx, mode)
             personality_pred = self.personality_predictor(personality_quantized, personality_idx, mode)
             if mode == 'test':

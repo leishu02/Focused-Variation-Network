@@ -47,16 +47,16 @@ class Evaluator:
             self.dump()
             return self.metric_dict['macro_fscore']
         else:
-            e2e_result = self.e2e_metric(data)
-            for k, v in e2e_result.items():
-                self.metric_dict[k] = v
+            #e2e_result = self.e2e_metric(data)
+            #for k, v in e2e_result.items():
+            #    self.metric_dict[k] = v
             if self.cfg.remove_slot_value:
                 success_p, success_r, success_f = self.success_f1_metric(data)
                 self.metric_dict['success_precision'] = success_p
                 self.metric_dict['success_recall'] = success_r
                 self.metric_dict['success_fscore'] = success_f
             self.dump()
-            return sum(e2e_result.values())
+            return None #sum(e2e_result.values())
 
     def classification(self, data, labels):
         pred, truth = [], []
