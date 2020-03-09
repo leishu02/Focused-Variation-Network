@@ -10,3 +10,5 @@ python model.py - domain personage -network classifier -mode train (test)
 ~/anaconda3/bin/python3.7 (python)
 /home/leishu/Desktop/PersonalizedSystem/model.py (model.py)
 -domain personage -network controlled_VQVAE -mode train (adjust, test)
+
+Lei : add comments on hyperparameters
