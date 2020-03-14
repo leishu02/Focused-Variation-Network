@@ -1,14 +1,29 @@
-pytorch 1.3
-install requirements for e2e metrics
+# Setup
 
-config.py
+Install requirements:
+```
+pip isntall -r requirements.txt
+```
+Install requirements for e2e metrics:
+```
+pip install -r e2e_metrics/requirements
+```
 
-trained personality classifier (change on preprocessing), re-train classifier again before train a generation model
-python model.py - domain personage -network classifier -mode train (test)
+# Execute
+
+Trained personality classifier (change on preprocessing), re-train classifier again before train a generation model
+```
+python model.py -domain personage -network classifier -mode [train | adjust | test]
+```
+
+Example command:
+```
+python model.py -domain personage -network controlled_VQVAE  -mode train
+```
+
+The file `config.py` contains the configuration parameters.
 
 
-~/anaconda3/bin/python3.7 (python)
-/home/leishu/Desktop/PersonalizedSystem/model.py (model.py)
--domain personage -network controlled_VQVAE -mode train (adjust, test)
+# TODO
 
-Lei : add comments on hyperparameters
+Lei: add comments on hyperparameters
