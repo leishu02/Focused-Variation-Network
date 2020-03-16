@@ -47,9 +47,9 @@ class Evaluator:
             self.dump()
             return self.metric_dict['macro_fscore']
         else:
-            #e2e_result = self.e2e_metric(data)
-            #for k, v in e2e_result.items():
-            #    self.metric_dict[k] = v
+            e2e_result = self.e2e_metric(data)
+            for k, v in e2e_result.items():
+                self.metric_dict[k] = v
             if self.cfg.remove_slot_value:
                 success_p, success_r, success_f = self.success_f1_metric(data)
                 self.metric_dict['success_precision'] = success_p
