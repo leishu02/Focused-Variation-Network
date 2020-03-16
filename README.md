@@ -44,7 +44,7 @@ beam_size=10 # beam size, range is greater than 1
 ```
 
 ## Testing
-## Test a generation model`
+## Test a generation model
 Results(prediction) are saved under 'results/'. Scores are saved under 'sheets/'
 ```
 python model.py -domain personage -network controlled_VQVAE  -mode test -cfg 
