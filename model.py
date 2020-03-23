@@ -13,6 +13,7 @@ from torch.autograd import Variable
 import argparse, time, os
 import logging
 
+import sys
 
 class Model:
     def __init__(self, cfg):
@@ -527,13 +528,13 @@ class Model:
         print(self.m)
 
 
-def main():
+def main(sys_args):
     parser = argparse.ArgumentParser()
     parser.add_argument('-domain')
     parser.add_argument('-network')
     parser.add_argument('-mode')
     parser.add_argument('-cfg', nargs='*')
-    args = parser.parse_args()
+    args = parser.parse_args(sys_args)
 
     cfg = Config(args.domain)
     cfg.init_handler(args.network)
@@ -565,10 +566,13 @@ def main():
 
     m = Model(cfg)
     m.count_params()
+
+    ret = None
     if args.mode == 'train':
         m.load_glove_embedding()
         m.train()
         m.load_model()
+        ret, _ = m.validate()
         m.eval(data='test')
     elif args.mode == 'adjust':
         m.load_model()
@@ -586,7 +590,7 @@ def main():
         m.load_model()
         m.predict(data = 'test')
 
-
+    return ret
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

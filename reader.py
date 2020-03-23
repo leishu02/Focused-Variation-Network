@@ -202,18 +202,16 @@ class Reader(_ReaderBase):
     def _get_tokenized_data(self, raw_data, construct_vocab, remove_slot_value):
 
         def delexicalize_text(slot_value, text):
-            output = []
-            for t in text:
-                flag = False
-                for slot, value in slot_value.items():
-                    if (slot != 'familyFriendly') and ('Variable' not in t) and (value.lower() == t):
-                        output.append(slot+'Variable')
-                        flag = True
-                        break
-                if flag == False:
-                    output.append(t)
-            assert(len(output) == len(text))
-            return output
+            text_str = ' '.join(text)
+            for slot, value in slot_value.items():
+                if (slot != 'familyFriendly') and (value.lower() in text_str):
+                    text_str = text_str.replace(value.lower(), slot+'Variable')
+                if (slot == 'familyFriendly'):
+                    for neg in ['', 'n\'t ', 'not ']:
+                        for ff in ['kid friendly ', 'family friendly' ]:
+                            if neg+ff in text_str:
+                                text_str.replace(neg+ff, slot+'Variable')
+            return text_str.split(' ')
 
         tokenized_data = defaultdict(list)
         for dial_id, dial in enumerate(raw_data):
