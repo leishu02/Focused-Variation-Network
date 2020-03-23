@@ -3,7 +3,7 @@ from numpy import arange
 import model
 
 
-train_args = ['-domain', 'personage', '-network', 'controlled_VQVAE', '-mode', 'train', '-cfg', 'cuda=False']
+train_args = ['-domain', 'personage', '-network', 'controlled_VQVAE', '-mode', 'train', '-cfg', 'cuda=True']
 test_args = ['-domain', 'personage', '-network', 'controlled_VQVAE', '-mode', 'test', '-cfg', 'cuda=True']
 hyperparameters_log = dict()
 
