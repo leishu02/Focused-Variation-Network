@@ -2,10 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9482b217-34a1-481f-9c00-20d6c9873ae5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/run_hyperparameter.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reader.py" beforeDir="false" afterPath="$PROJECT_DIR$/reader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_hyperparameter.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_hyperparameter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vocabs/embedding_personage_controlled_VQVAE.npy" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vocabs/personage_controlled_VQVAE_wValue.p" beforeDir="false" afterPath="$PROJECT_DIR$/vocabs/personage_controlled_VQVAE_wValue.p" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -26,6 +27,7 @@
   <component name="ProjectId" id="1WP7F3ypF5hEKbO4N8FwykFx32x" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
@@ -149,6 +151,11 @@
           <url>file://$PROJECT_DIR$/run_hyperparameter.py</url>
           <line>48</line>
           <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/model.py</url>
+          <line>572</line>
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
