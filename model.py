@@ -581,10 +581,10 @@ def main(sys_args):
         m.eval(data='test')
     elif args.mode == 'test':
         m.load_model()
-        m.eval(data='test')
+        ret = m.eval(data='test')
     elif args.mode == 'eval':
         m.load_model()
-        m.run_metrics(data='test')
+        ret = m.run_metrics(data='test')
     elif args.mode == 'predict':
         print ('start predicting')
         m.load_model()
