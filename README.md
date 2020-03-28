@@ -15,7 +15,7 @@ pip install -r e2e_metrics/requirements
 ### Train a personality classifier
 Trained personality classifier (change on preprocessing). If there is any change in preprocessing, please re-train classifier again before training a generation model
 ```
-python model.py -domain personage -network classifier -mode [train | adjust | test]
+python model.py -domain personage -network classification -mode [train | adjust | test]
 
 ```
 
