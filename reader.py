@@ -204,13 +204,20 @@ class Reader(_ReaderBase):
         def delexicalize_text(slot_value, text):
             text_str = ' '.join(text)
             for slot, value in slot_value.items():
+                if (slot == 'priceRange') and (value.lower() in text_str):
+                    if value.lower() not in text:
+                        for t in text:
+                            if value.lower() in t:
+                                text_str = text_str.replace(t, slot + 'Variable')
+                    else:
+                        text_str = text_str.replace(value.lower(), slot + 'Variable')
                 if (slot != 'familyFriendly') and (value.lower() in text_str):
                     text_str = text_str.replace(value.lower(), slot+'Variable')
                 if (slot == 'familyFriendly'):
-                    for neg in ['', 'n\'t ', 'not ']:
-                        for ff in ['kid friendly ', 'family friendly' ]:
+                    for neg in ['n\'t ', 'not ', '']:
+                        for ff in ['kid friendly', 'family friendly' ]:
                             if neg+ff in text_str:
-                                text_str.replace(neg+ff, slot+'Variable')
+                                text_str = text_str.replace(neg+ff, slot+'Variable')
             return text_str.split(' ')
 
         tokenized_data = defaultdict(list)

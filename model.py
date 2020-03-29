@@ -334,6 +334,8 @@ class Model:
                                 word_list.append(t.item())
                                 if word == 'EOS':
                                     break
+                        if not word_list:
+                            word_list = [self.reader.vocab.encode('EOS')]
                         batch_gen.append(word_list)
                         batch_gen_len.append(len(word_list))
                     text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
@@ -391,6 +393,8 @@ class Model:
                                 word_list.append(t.item())
                                 if word == 'EOS':
                                     break
+                        if not word_list:
+                            word_list = [self.reader.vocab.encode('EOS')]
                         batch_gen.append(word_list)
                         batch_gen_len.append(len(word_list))
                     text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
