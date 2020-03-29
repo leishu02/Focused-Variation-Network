@@ -67,7 +67,6 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.vocab_path = './vocabs/' + self.domain+ '_' + self.network + '_wValue.p'
         self.slot_max_ts = 29
         self.text_max_ts = 62
         self.personality_size = 5
@@ -78,13 +77,17 @@ class Config:
         self.model_path = './models/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
         self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
         self.vocab_emb = './vocabs/embedding_' + self.domain + '_' + self.network
+        self.vocab_path = './vocabs/' + self.domain + '_' + self.network
         if self.remove_slot_value:
             self.model_path += '_delex'
             self.result_path += '_delex'
+            self.vocab_path += '_delex'
+            self.vocab_emb += '_delex'
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
         self.result_path += '.csv'
+        self.vocav_path += '.p'
         self.vocab_emb += '.npy'
 
 
@@ -112,7 +115,6 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.vocab_path = './vocabs/' + self.domain + '_wValue.p'
         self.slot_max_ts = 29
         self.text_max_ts = 62
         self.personality_size = 5
@@ -120,16 +122,20 @@ class Config:
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _simple_VQVAE_update(self):
-        self.model_path = './models/simple_VQVAE_' + self.domain + '_' + self.decoder_network
-        self.result_path = './results/simple_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.model_path = './models/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
         self.vocab_emb = './vocabs/embedding_' + self.domain + '_' + self.network
+        self.vocab_path = './vocabs/' + self.domain + '_' + self.network
         if self.remove_slot_value:
             self.model_path += '_delex'
             self.result_path += '_delex'
+            self.vocab_path += '_delex'
+            self.vocab_emb += '_delex'
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
         self.result_path += '.csv'
+        self.vocav_path += '.p'
         self.vocab_emb += '.npy'
 
     def _simple_seq2seq_init(self):
@@ -154,7 +160,6 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.vocab_path = './vocabs/' + self.domain + '_wValue.p'
         self.slot_max_ts = 29
         self.text_max_ts = 62
         self.personality_size = 5
@@ -162,23 +167,20 @@ class Config:
         
         
     def _simple_seq2seq_update(self):
-        self.model_path = './models/simple_seq2seq_'+self.domain
-        self.result_path = './results/simple_seq2seq_' + self.domain
+        self.model_path = './models/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
         self.vocab_emb = './vocabs/embedding_' + self.domain + '_' + self.network
+        self.vocab_path = './vocabs/' + self.domain + '_' + self.network
         if self.remove_slot_value:
-            self.model_path +='_delex'
-            self.result_path +='_delex'
-        if self.VAE:
-            self.model_path += '_VAE'
-            self.result_path +='_VAE'
-        if self.various_go:
-            self.model_path += '_GO'
-            self.result_path +='_GO'
-            self.vocab_emb += '_GO'
+            self.model_path += '_delex'
+            self.result_path += '_delex'
+            self.vocab_path += '_delex'
+            self.vocab_emb += '_delex'
         if self.beam_search:
-            self.result_path +='_beam' + str(self.beam_size) 
+            self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
         self.result_path += '.csv'
+        self.vocav_path += '.p'
         self.vocab_emb += '.npy'
 
 
@@ -204,30 +206,26 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.vocab_path = './vocabs/' + self.domain + '_wValue.p'
         self.slot_max_ts = 29
         self.text_max_ts = 62
         self.personality_size = 5
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _copy_seq2seq_update(self):
-        self.model_path = './models/copy_seq2seq_'+self.domain
-        self.result_path = './results/copy_seq2seq_' + self.domain
+        self.model_path = './models/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
         self.vocab_emb = './vocabs/embedding_' + self.domain + '_' + self.network
+        self.vocab_path = './vocabs/' + self.domain + '_' + self.network
         if self.remove_slot_value:
-            self.model_path +='_delex'
-            self.result_path +='_delex'
-        if self.VAE:
-            self.model_path += '_VAE'
-            self.result_path +='_VAE'
-        if self.various_go:
-            self.model_path += '_GO'
-            self.result_path +='_GO'
-            self.vocab_emb += '_GO'
+            self.model_path += '_delex'
+            self.result_path += '_delex'
+            self.vocab_path += '_delex'
+            self.vocab_emb += '_delex'
         if self.beam_search:
-            self.result_path +='_beam' + str(self.beam_size) 
+            self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
         self.result_path += '.csv'
+        self.vocav_path += '.p'
         self.vocab_emb += '.npy'
 
 
@@ -254,7 +252,6 @@ class Config:
         self.result_path = './results/classification_'+self.domain+'.csv'
         self.input_size = 62
         self.output_size = 5 #total 5 personality
-        self.vocab_emb = './vocabs/embedding_' + self.domain+ '_classification'
         self.glove_path = './data/glove.840B.300d.txt'
         self.slot_max_ts = 29
         self.text_max_ts = 62
@@ -262,10 +259,14 @@ class Config:
         self.act_size = 8
 
     def _classification_update(self):
+        self.vocab_emb = './vocabs/embedding_' + self.domain + '_' + self.network
+        self.vocab_path = './vocabs/' + self.domain + '_' + self.network
         if self.remove_slot_value:
-            self.vocab_path = './vocabs/'+self.domain+'_woValue.p'
-        else:
-            self.vocab_path = './vocabs/' + self.domain + '_wValue.p'
+            self.vocab_path += '_delex'
+            self.vocab_emb += '_delex'
+
+        self.vocav_path += '.p'
+        self.vocab_emb += '.npy'
 
     def __str__(self):
         s = ''
