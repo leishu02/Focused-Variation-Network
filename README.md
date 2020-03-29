@@ -24,6 +24,7 @@ The file `config.py` contains the configuration parameters.
 Example command:
 ```
 python model.py -domain personage -network controlled_VQVAE  -mode train -cfg 
+python_path=None #place the python path for subprocess call, default is None. When it is None, the e2e evaluation metric is not run
 cuda=True 
 lr = 0.001 #learning rate
 lr_decay = 1.0 #learning rate decay on epoch
@@ -48,6 +49,7 @@ beam_size=10 # beam size, range is greater than 1
 Results(prediction) are saved under 'results/'. Scores are saved under 'sheets/'
 ```
 python model.py -domain personage -network controlled_VQVAE  -mode test -cfg 
+python_path=None #place the python path for subprocess call, default is None. When it is None, the e2e evaluation metric is not run
 cuda=True 
 lr = 0.001 #learning rate
 lr_decay = 1.0 #learning rate decay on epoch
