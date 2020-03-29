@@ -248,7 +248,7 @@ class Config:
         self.batch_size = 32
         self.dropout_rate = 0.0
         self.epoch_num = 50  # triggered by early stop
-        self.cuda = True
+        self.cuda = False
         self.early_stop_count = 10
         self.model_path = './models/classification_'+self.domain+'.pkl'
         self.result_path = './results/classification_'+self.domain+'.csv'
