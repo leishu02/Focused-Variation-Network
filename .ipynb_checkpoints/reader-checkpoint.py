@@ -361,18 +361,20 @@ class Reader(_ReaderBase):
                             'priceRange': ['price', 'range'], 'area': ['area'], 'eatType': ['eat', 'type'],
                             'familyFriendly': ['family', 'friendly'], 'near': ['near'],
                             }
-        construct_vocab = True
+        construct_vocab = False
         if not os.path.isfile(self.cfg.vocab_path):
             construct_vocab = True
             print('Constructing vocab file...')
-        for w in self.personality2idx.keys():
-            self.vocab.add_item(w)
-        for w in self.slot_values.keys():
-            self.vocab.add_item(w+'Variable')
-            self.vocab.add_item('EOS_'+w)
-        if not self.cfg.remove_slot_value:
-            for w in self.slot_values.values():
+            for w in self.personality2idx.keys():
                 self.vocab.add_item(w)
+            for w in self.slot_values.keys():
+                self.vocab.add_item(w+'Variable')
+                self.vocab.add_item('EOS_'+w)
+            if not self.cfg.remove_slot_value:
+                for w in self.slot_values.values():
+                    self.vocab.add_item(w)
+        else:
+            self.vocab.load_vocab(self.cfg.vocab_path)
 
         tokenized_data = self._get_tokenized_data(raw_data, construct_vocab, self.cfg.remove_slot_value)         
         tokenized_test_data = self._get_tokenized_data(test_data, construct_vocab, self.cfg.remove_slot_value)
