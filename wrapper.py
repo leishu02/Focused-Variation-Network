@@ -1,11 +1,7 @@
 #! /usr/bin/env python
 # coding=utf-8
 import ailabs.tlogger as tlogger  # TODO pycharm warning - No module
-import json
 import logging
-import os
-import sys
-from pprint import pformat
 
 train_args = ['-domain', 'personage', '-network', 'controlled_VQVAE', '-mode', 'train', '-cfg', 'cuda=True']
 test_args = ['-domain', 'personage', '-network', 'controlled_VQVAE', '-mode', 'test', '-cfg', 'cuda=True']
@@ -72,5 +68,6 @@ def wrapper(
 
     logging.info('Saving output to tlogger')
     tlogger.record_tabular('validation_loss', validation_loss)
+    tlogger.dump_tabular()
 
     return validation_loss
