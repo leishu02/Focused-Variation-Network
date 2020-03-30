@@ -19,7 +19,7 @@ class Config:
         self.slot_path = fd+domain_config.domain_path[domain]['slot_path']
         self.personality_path = fd+domain_config.domain_path[domain]['personality_path']
         self.split = domain_config.domain_path[domain]['split']
-        self.python_path = None
+        self.python_path = ''
 
     def init_handler(self, network_type):
         self.network = network_type
