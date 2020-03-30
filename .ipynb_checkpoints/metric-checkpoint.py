@@ -47,7 +47,7 @@ class Evaluator:
             self.dump()
             return self.metric_dict['macro_fscore']
         else:
-            if self.cfg.python_path:
+            if self.cfg.python_path != '':
                 e2e_result = self.e2e_metric(data)
                 for k, v in e2e_result.items():
                     self.metric_dict[k] = v
