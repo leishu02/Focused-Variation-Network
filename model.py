@@ -598,6 +598,10 @@ def main(sys_args):
         m.load_model()
         m.predict(data = 'test')
 
+    print()
+    print("ret:")
+    print(ret)
+
     return ret
 
 if __name__ == '__main__':
