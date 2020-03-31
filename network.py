@@ -630,7 +630,7 @@ class Controlled_VQVAE(torch.nn.Module):
             return act_encoding, personality_encoding
         elif mode == 'test':
             pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
-            return pred_y, act_pred, personality_pred
+            return pred_y , act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
         if self.cfg.remove_slot_value == True:
@@ -753,7 +753,7 @@ class Controlled_VQVAE(torch.nn.Module):
                 else:
                     text_dec_idx = self.beam_search_decode(text_tm1,  last_hidden, slot_enc_out, personality_enc_out)
 
-                return text_dec_idx, act_pred, personality_pred
+                return text_dec_idx , act_pred, personality_pred
 
     def greedy_decode(self, text_tm1,  last_hidden, slot_enc_out, personality_enc_out):
         decoded = []

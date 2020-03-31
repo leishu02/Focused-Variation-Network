@@ -3,6 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="9482b217-34a1-481f-9c00-20d6c9873ae5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reader.py" beforeDir="false" afterPath="$PROJECT_DIR$/reader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results/controlled_VQVAE_personage_LSTM_delex_CB512EL1TMT62_beam10.csv" beforeDir="false" afterPath="$PROJECT_DIR$/results/controlled_VQVAE_personage_LSTM_delex_CB512EL1TMT62_beam10.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results/simple_seq2seq_personage_delex_EL1TMT62.csv" beforeDir="false" afterPath="$PROJECT_DIR$/results/simple_seq2seq_personage_delex_EL1TMT62.csv" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -74,7 +79,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/model.py" />
-      <option name="PARAMETERS" value="-domain personage -network classification -mode train" />
+      <option name="PARAMETERS" value="-domain personage -network simple_seq2seq -mode test -cfg beam_search=False cuda=False" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -149,19 +154,14 @@
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/reader.py</url>
-          <line>219</line>
-          <option name="timeStamp" value="10" />
+          <url>file://$PROJECT_DIR$/model.py</url>
+          <line>407</line>
+          <option name="timeStamp" value="26" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/reader.py</url>
-          <line>220</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/reader.py</url>
-          <line>218</line>
-          <option name="timeStamp" value="13" />
+          <url>file://$PROJECT_DIR$/model.py</url>
+          <line>398</line>
+          <option name="timeStamp" value="28" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

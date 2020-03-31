@@ -322,19 +322,12 @@ class Model:
                     batch_gen_len = []
                     for i in range(batch_size):
                         word_list = []
-                        if self.cfg.beam_search:
-                            for t in pred_y[0][i]:
-                                word = self.reader.vocab.decode(t.item())
-                                if '<go' not in word:
-                                    word_list.append(t.item())
-                                if word == 'EOS':
-                                    break
-                        else:
-                            for t in pred_y[i]:
-                                word = self.reader.vocab.decode(t.item())
+                        for t in pred_y[i]:
+                            word = self.reader.vocab.decode(t.item())
+                            if '<go' not in word:
                                 word_list.append(t.item())
-                                if word == 'EOS':
-                                    break
+                            if word == 'EOS':
+                                break
                         if not word_list or word_list[-1] != self.reader.vocab.encode('EOS'):
                             word_list += [self.reader.vocab.encode('EOS')]
                         batch_gen.append(word_list)
@@ -372,28 +365,25 @@ class Model:
             for turn_num, turn_batch in enumerate(dial_batch):
                 if 'VQVAE' in self.cfg.network:
                     x, gt_y, kw_ret = self._convert_batch(turn_batch, act_idx_dict, personality_idx_dict)
+                    pred_y, _, _ = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
                 else:
                     x, gt_y, kw_ret = self._convert_batch(turn_batch)
-                pred_y = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
-                if self.cfg.network != 'classification':
+                    pred_y = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
+
+                if self.cfg.network == 'classification':
+                    self.reader.wrap_result(turn_batch, pred_y)
+                else:
                     batch_size = len(turn_batch['id'])
                     batch_gen = []
                     batch_gen_len = []
                     for i in range(batch_size):
                         word_list = []
-                        if self.cfg.beam_search:
-                            for t in pred_y[0][i]:
-                                word = self.reader.vocab.decode(t.item())
-                                if '<go' not in word:
-                                    word_list.append(t.item())
-                                if word == 'EOS':
-                                    break
-                        else:
-                            for t in pred_y[i]:
-                                word = self.reader.vocab.decode(t.item())
+                        for t in pred_y[i]:
+                            word = self.reader.vocab.decode(t.item())
+                            if '<go' not in word:
                                 word_list.append(t.item())
-                                if word == 'EOS':
-                                    break
+                            if word == 'EOS':
+                                break
                         if not word_list or word_list[-1] != self.reader.vocab.encode('EOS'):
                             word_list += [self.reader.vocab.encode('EOS')]
                         #print(word_list)
@@ -407,8 +397,7 @@ class Model:
                     person_kw_ret['delex_text_len'] = np.asarray(batch_gen_len)
                     person_pred = self.person_m(x=person_x, gt_y=None, mode='test', **person_kw_ret)
                     self.reader.wrap_result(turn_batch, pred_y, person_pred)
-                else:
-                    self.reader.wrap_result(turn_batch, pred_y)
+
         if self.reader.result_file != None:
             self.reader.result_file.close()
         ev = self.EV(self.cfg)

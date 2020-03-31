@@ -1,0 +1,22 @@
+START_REPORT_SECTION
+agreeable_precision	0.0
+agreeable_recall	0.0
+agreeable_fscore	0.0
+disagreeable_precision	0.0
+disagreeable_recall	0.0
+disagreeable_fscore	0.0
+conscientiousness_precision	0.0
+conscientiousness_recall	0.0
+conscientiousness_fscore	0.0
+unconscientiousness_precision	0.0
+unconscientiousness_recall	0.0
+unconscientiousness_fscore	0.0
+extravert_precision	0.0
+extravert_recall	0.0
+extravert_fscore	0.0
+macro_precision	0.0
+macro_recall	0.0
+macro_fscore	0.0
+success_precision	0.9675908342815956
+success_recall	0.9651471145334447
+success_fscore	0.9663674245094703

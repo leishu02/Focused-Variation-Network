@@ -452,29 +452,11 @@ class Reader(_ReaderBase):
             if self.cfg.network == 'classification':
                 idx = np.argmax(pred_y[i])
                 entry['pred_personality'] = self.idx2personality[idx]
-            elif 'seq2seq' in self.cfg.network:
+            elif 'seq2seq' in self.cfg.network or 'VQVAE' in self.cfg.network:
                 word_list = []
                 for t in pred_y[i]:
                     word = self.vocab.decode(t.item())
                     if '<go' not in word :
-                        word_list.append(word)
-                    if word == 'EOS':
-                        break
-                if self.cfg.remove_slot_value == True:
-                    entry['pred_delex_text_tokens'] = json.dumps(clearEOS(word_list))
-                    entry['pred_delex_text'] = ' '.join(clearEOS(word_list))
-                    entry['pred_text_tokens'] = json.dumps([])
-                    entry['pred_text'] = ''
-                else:
-                    entry['pred_text_tokens'] = json.dumps(clearEOS(word_list))
-                    entry['pred_text'] = ' '.join(clearEOS(word_list))
-                    entry['pred_delex_text_tokens'] = json.dumps([])
-                    entry['pred_delex_text'] = ''
-            elif 'VQVAE' in self.cfg.network:
-                word_list = []
-                for t in pred_y[0][i]:
-                    word = self.vocab.decode(t.item())
-                    if '<go' not in word:
                         word_list.append(word)
                     if word == 'EOS':
                         break
