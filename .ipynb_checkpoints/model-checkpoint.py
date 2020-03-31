@@ -429,11 +429,11 @@ class Model:
                 x, gt_y, kw_ret = self._convert_batch(turn_batch)
                 if 'VQVAE' in self.cfg.network:
                     loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss \
-                        = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
-                elif self.cfg.VAE:
-                    loss, network_loss, kld = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
-                else:
+                        = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)                    
+                elif 'classificationq' in self.cfg.network:
                     loss = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
+                else:
+                    loss, network_loss, kld = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                 sup_loss += loss.item()
                 sup_cnt += 1
                 if 'VQVAE' in self.cfg.network:
@@ -597,6 +597,10 @@ def main(sys_args):
         print ('start predicting')
         m.load_model()
         m.predict(data = 'test')
+
+    print()
+    print("ret:")
+    print(ret)
 
     return ret
 

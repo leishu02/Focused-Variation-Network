@@ -19,7 +19,7 @@ class Config:
         self.slot_path = fd+domain_config.domain_path[domain]['slot_path']
         self.personality_path = fd+domain_config.domain_path[domain]['personality_path']
         self.split = domain_config.domain_path[domain]['split']
-        self.python_path = None
+        self.python_path = ''
 
     def init_handler(self, network_type):
         self.network = network_type
@@ -84,6 +84,8 @@ class Config:
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
+        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)
+        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
@@ -100,15 +102,15 @@ class Config:
         self.max_turn = 100
         self.emb_size = 300
         self.emb_trainable = True
-        self.hidden_size = 256
+        self.hidden_size = 300
         self.codebook_size = 512
         self.lr = 0.001
         self.lr_decay = 1.0
         self.batch_size = 128
         self.dropout_rate = 0.0
-        self.epoch_num = 50  # triggered by early stop
+        self.epoch_num = 100  # triggered by early stop
         self.cuda = True
-        self.early_stop_count = 10
+        self.early_stop_count = 30
         self.vocab_size = None
         self.remove_slot_value = True
         self.encoder_layer_num = 1
@@ -123,8 +125,8 @@ class Config:
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _simple_VQVAE_update(self):
-        self.model_path = './models/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
-        self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.model_path = './models/simple_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.result_path = './results/simple_VQVAE_' + self.domain + '_' + self.decoder_network
         self.vocab_emb = './vocabs/embedding_' + self.domain 
         self.vocab_path = './vocabs/' + self.domain 
         if self.remove_slot_value:
@@ -132,6 +134,8 @@ class Config:
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
+        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)
+        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
@@ -140,19 +144,19 @@ class Config:
         self.vocab_emb += '.npy'
 
     def _simple_seq2seq_init(self):
-        self.VAE = True
+        self.VAE = False
         self.various_go = False
         self.grad_clip_norm = 1.0
         self.max_turn = 100
         self.emb_size = 300
         self.emb_trainable = True
-        self.hidden_size = 256
+        self.hidden_size = 300
         self.lr = 0.001
         self.lr_decay = 1.0
         self.batch_size = 128
         self.dropout_rate = 0.0
         self.epoch_num = 100  # triggered by early stop
-        self.cuda = False
+        self.cuda = True
         self.early_stop_count = 30
         self.vocab_size = None
         self.remove_slot_value = True
@@ -168,8 +172,8 @@ class Config:
         
         
     def _simple_seq2seq_update(self):
-        self.model_path = './models/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
-        self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.model_path = './models/simple_seq2seq_' + self.domain 
+        self.result_path = './results/simple_seq2seq_' + self.domain 
         self.vocab_emb = './vocabs/embedding_' + self.domain
         self.vocab_path = './vocabs/' + self.domain
         if self.remove_slot_value:
@@ -177,6 +181,11 @@ class Config:
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
+        if self.VAE:
+            self.model_path += '_VAE'
+            self.result_path += '_VAE'
+        self.model_path += '_EL'+str(self.encoder_layer_num)
+        self.result_path += '_EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
@@ -186,13 +195,13 @@ class Config:
 
 
     def _copy_seq2seq_init(self):
-        self.VAE = True
+        self.VAE = False
         self.various_go = False
         self.grad_clip_norm = 1.0
         self.max_turn = 100
         self.emb_size = 300
         self.emb_trainable = True
-        self.hidden_size = 256 #xiujun's 6./;0
+        self.hidden_size = 300 
         self.lr = 0.001
         self.lr_decay = 1.0
         self.batch_size = 128
@@ -203,7 +212,7 @@ class Config:
         self.vocab_size = None
         self.remove_slot_value = True
         self.encoder_layer_num = 1
-        self.beam_search = True
+        self.beam_search = False
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
@@ -213,15 +222,20 @@ class Config:
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _copy_seq2seq_update(self):
-        self.model_path = './models/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
-        self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
-        self.vocab_emb = './vocabs/embedding_' + self.domain + '_' + self.network
+        self.model_path = './models/copy_seq2seq_' + self.domain 
+        self.result_path = './results/copy_seq2seq_' + self.domain 
+        self.vocab_emb = './vocabs/embedding_' + self.domain 
         self.vocab_path = './vocabs/' + self.domain
         if self.remove_slot_value:
             self.model_path += '_delex'
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
+        if self.VAE:
+            self.model_path += '_VAE'
+            self.result_path += '_VAE'
+        self.model_path += '_EL'+str(self.encoder_layer_num)
+        self.result_path += '_EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'

@@ -390,7 +390,7 @@ class VQVAE(torch.nn.Module):
             loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss = self.forward_turn(x, gt_y, mode, **kwargs)
             return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
         elif mode == 'getDist':
-            print ("forward")
+            #print ("forward")
             act_encoding, personality_encoding = self.forward_turn(x, gt_y, mode, **kwargs)
             return act_encoding, personality_encoding
         elif mode == 'test':
@@ -398,7 +398,7 @@ class VQVAE(torch.nn.Module):
             return pred_y, act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
-        print ("forward turn")
+        #print ("forward turn")
         if self.cfg.remove_slot_value == True:
             x_len = kwargs['slot_len']  # batchsize
             x_np = kwargs['slot_np']  # seqlen, batchsize

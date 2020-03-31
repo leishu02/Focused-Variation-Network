@@ -1,0 +1,22 @@
+START_REPORT_SECTION
+agreeable_precision	0.9927797833935018
+agreeable_recall	0.9892086330935251
+agreeable_fscore	0.990990990990991
+disagreeable_precision	0.9964028776978417
+disagreeable_recall	0.9964028776978417
+disagreeable_fscore	0.9964028776978417
+conscientiousness_precision	0.9857142857142858
+conscientiousness_recall	0.9928057553956835
+conscientiousness_fscore	0.989247311827957
+unconscientiousness_precision	1.0
+unconscientiousness_recall	1.0
+unconscientiousness_fscore	1.0
+extravert_precision	0.9963898916967509
+extravert_recall	0.9928057553956835
+extravert_fscore	0.9945945945945946
+macro_precision	0.9942573677004759
+macro_recall	0.9942446043165468
+macro_fscore	0.994247155022277
+success_precision	0.9141008040774385
+success_recall	0.7062121212110513
+success_fscore	0.7968202361271877
