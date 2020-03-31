@@ -79,9 +79,12 @@ class Model:
             kw_ret['personality_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(personality_encoding))).long(), self.cfg)
 
         if self.cfg.network == 'classification':
-            x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
-            gt_y_np = np.asarray(py_batch['personality_idx'])
-            gt_y = cuda_(Variable(torch.from_numpy(gt_y_np).long()), self.cfg)
+            if self.cfg.remove_slot_value == True:
+                x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
+            else:
+                x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
+                gt_y_np = np.asarray(py_batch['personality_idx'])
+                gt_y = cuda_(Variable(torch.from_numpy(gt_y_np).long()), self.cfg)
         elif 'seq2seq' in self.cfg.network:
             if self.cfg.remove_slot_value == True:
                 x = cuda_(Variable(torch.from_numpy(slot_np).long()), self.cfg)#seqlen, batchsize
@@ -187,9 +190,10 @@ class Model:
 
 
         if self.cfg.network == 'classification':
-            x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
-            gt_y_np = np.asarray(py_batch['personality_idx'])
-            gt_y = cuda_(Variable(torch.from_numpy(gt_y_np).long()), self.cfg)
+            if self.cfg.remove_slot_value == True:
+                x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
+            else:
+                x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
         elif 'seq2seq' in self.cfg.network:
             if self.cfg.remove_slot_value == True:
                 x = cuda_(Variable(torch.from_numpy(slot_np).long()), self.cfg)#seqlen, batchsize
@@ -290,6 +294,8 @@ class Model:
     def personality_predictor(self):
         person_cfg = Config('personage')
         person_cfg.init_handler('classification')
+        person_cfg.remove_slot_value = self.cfg.remove_slot_value
+        person_cfg.update()
         self.person_m = get_network(person_cfg, self.reader.vocab)
         path = person_cfg.model_path
         if self.cfg.cuda:

@@ -1097,7 +1097,7 @@ class Seq2Seq(torch.nn.Module):
         batch_size = x.size(1)        
         personality_enc_out, personality_hidden, personality_emb = self.encoder(personality_seq, personality_len)
         slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, personality_hidden)
-        last_hidden = slot_hidden[:-1]
+        last_hidden = slot_hidden[(self.cfg.encoder_layer_num-1)*2:-1]
         
         if self.cfg.VAE:
             z, decode_z, mu, logvar = self.vae(last_hidden)
