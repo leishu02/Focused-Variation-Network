@@ -261,10 +261,8 @@ class Config:
         self.batch_size = 32
         self.dropout_rate = 0.0
         self.epoch_num = 50  # triggered by early stop
-        self.cuda = False
+        self.cuda = True
         self.early_stop_count = 10
-        self.model_path = './models/classification_'+self.domain+'.pkl'
-        self.result_path = './results/classification_'+self.domain+'.csv'
         self.input_size = 62
         self.output_size = 5 #total 5 personality
         self.glove_path = './data/glove.840B.300d.txt'
@@ -274,12 +272,17 @@ class Config:
         self.act_size = 8
 
     def _classification_update(self):
+        self.model_path = './models/classification_'+self.domain
+        self.result_path = './results/classification_'+self.domain
         self.vocab_emb = './vocabs/embedding_' + self.domain
         self.vocab_path = './vocabs/' + self.domain
         if self.remove_slot_value:
+            self.model_path += '_delex'
+            self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
-
+        self.model_path += '.pkl'
+        self.result_path += '.csv'
         self.vocab_path += '.p'
         self.vocab_emb += '.npy'
 

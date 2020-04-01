@@ -261,7 +261,7 @@ class Config:
         self.batch_size = 32
         self.dropout_rate = 0.0
         self.epoch_num = 50  # triggered by early stop
-        self.cuda = False
+        self.cuda = True
         self.early_stop_count = 10
         self.input_size = 62
         self.output_size = 5 #total 5 personality

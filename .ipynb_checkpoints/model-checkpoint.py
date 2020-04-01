@@ -79,9 +79,12 @@ class Model:
             kw_ret['personality_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(personality_encoding))).long(), self.cfg)
 
         if self.cfg.network == 'classification':
-            x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
-            gt_y_np = np.asarray(py_batch['personality_idx'])
-            gt_y = cuda_(Variable(torch.from_numpy(gt_y_np).long()), self.cfg)
+            if self.cfg.remove_slot_value == True:
+                x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
+            else:
+                x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
+                gt_y_np = np.asarray(py_batch['personality_idx'])
+                gt_y = cuda_(Variable(torch.from_numpy(gt_y_np).long()), self.cfg)
         elif 'seq2seq' in self.cfg.network:
             if self.cfg.remove_slot_value == True:
                 x = cuda_(Variable(torch.from_numpy(slot_np).long()), self.cfg)#seqlen, batchsize
@@ -187,9 +190,10 @@ class Model:
 
 
         if self.cfg.network == 'classification':
-            x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
-            gt_y_np = np.asarray(py_batch['personality_idx'])
-            gt_y = cuda_(Variable(torch.from_numpy(gt_y_np).long()), self.cfg)
+            if self.cfg.remove_slot_value == True:
+                x = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)
+            else:
+                x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
         elif 'seq2seq' in self.cfg.network:
             if self.cfg.remove_slot_value == True:
                 x = cuda_(Variable(torch.from_numpy(slot_np).long()), self.cfg)#seqlen, batchsize
@@ -290,6 +294,8 @@ class Model:
     def personality_predictor(self):
         person_cfg = Config('personage')
         person_cfg.init_handler('classification')
+        person_cfg.remove_slot_value = self.cfg.remove_slot_value
+        person_cfg.update()
         self.person_m = get_network(person_cfg, self.reader.vocab)
         path = person_cfg.model_path
         if self.cfg.cuda:
@@ -322,19 +328,12 @@ class Model:
                     batch_gen_len = []
                     for i in range(batch_size):
                         word_list = []
-                        if self.cfg.beam_search:
-                            for t in pred_y[0][i]:
-                                word = self.reader.vocab.decode(t.item())
-                                if '<go' not in word:
-                                    word_list.append(t.item())
-                                if word == 'EOS':
-                                    break
-                        else:
-                            for t in pred_y[i]:
-                                word = self.reader.vocab.decode(t.item())
+                        for t in pred_y[i]:
+                            word = self.reader.vocab.decode(t.item())
+                            if '<go' not in word:
                                 word_list.append(t.item())
-                                if word == 'EOS':
-                                    break
+                            if word == 'EOS':
+                                break
                         if not word_list or word_list[-1] != self.reader.vocab.encode('EOS'):
                             word_list += [self.reader.vocab.encode('EOS')]
                         batch_gen.append(word_list)
@@ -372,28 +371,25 @@ class Model:
             for turn_num, turn_batch in enumerate(dial_batch):
                 if 'VQVAE' in self.cfg.network:
                     x, gt_y, kw_ret = self._convert_batch(turn_batch, act_idx_dict, personality_idx_dict)
+                    pred_y, _, _ = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
                 else:
                     x, gt_y, kw_ret = self._convert_batch(turn_batch)
-                pred_y = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
-                if self.cfg.network != 'classification':
+                    pred_y = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
+
+                if self.cfg.network == 'classification':
+                    self.reader.wrap_result(turn_batch, pred_y)
+                else:
                     batch_size = len(turn_batch['id'])
                     batch_gen = []
                     batch_gen_len = []
                     for i in range(batch_size):
                         word_list = []
-                        if self.cfg.beam_search:
-                            for t in pred_y[0][i]:
-                                word = self.reader.vocab.decode(t.item())
-                                if '<go' not in word:
-                                    word_list.append(t.item())
-                                if word == 'EOS':
-                                    break
-                        else:
-                            for t in pred_y[i]:
-                                word = self.reader.vocab.decode(t.item())
+                        for t in pred_y[i]:
+                            word = self.reader.vocab.decode(t.item())
+                            if '<go' not in word:
                                 word_list.append(t.item())
-                                if word == 'EOS':
-                                    break
+                            if word == 'EOS':
+                                break
                         if not word_list or word_list[-1] != self.reader.vocab.encode('EOS'):
                             word_list += [self.reader.vocab.encode('EOS')]
                         #print(word_list)
@@ -407,8 +403,7 @@ class Model:
                     person_kw_ret['delex_text_len'] = np.asarray(batch_gen_len)
                     person_pred = self.person_m(x=person_x, gt_y=None, mode='test', **person_kw_ret)
                     self.reader.wrap_result(turn_batch, pred_y, person_pred)
-                else:
-                    self.reader.wrap_result(turn_batch, pred_y)
+
         if self.reader.result_file != None:
             self.reader.result_file.close()
         ev = self.EV(self.cfg)
@@ -430,7 +425,7 @@ class Model:
                 if 'VQVAE' in self.cfg.network:
                     loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss \
                         = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)                    
-                elif 'classificationq' in self.cfg.network:
+                elif 'classification' in self.cfg.network:
                     loss = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                 else:
                     loss, network_loss, kld = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)

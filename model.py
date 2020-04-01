@@ -425,7 +425,7 @@ class Model:
                 if 'VQVAE' in self.cfg.network:
                     loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss \
                         = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)                    
-                elif 'classificationq' in self.cfg.network:
+                elif 'classification' in self.cfg.network:
                     loss = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                 else:
                     loss, network_loss, kld = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
