@@ -29,6 +29,7 @@ class Config:
             'simple_seq2seq': self._simple_seq2seq_init,
             'simple_VQVAE': self._simple_VQVAE_init,
             'controlled_VQVAE': self._controlled_VQVAE_init,
+            'focused_VQVAE': self._focused_VQVAE_init,
         }
         init_method[network_type]()
 
@@ -40,6 +41,7 @@ class Config:
             'simple_seq2seq': self._simple_seq2seq_update,
             'simple_VQVAE': self._simple_VQVAE_update,
             'controlled_VQVAE': self._controlled_VQVAE_update,
+            'focused_VQVAE': self._focused_VQVAE_update,
         }
         update_method[self.network]()
 
@@ -79,6 +81,55 @@ class Config:
         self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
         self.vocab_emb = './vocabs/embedding_' + self.domain 
         self.vocab_path = './vocabs/' + self.domain 
+        if self.remove_slot_value:
+            self.model_path += '_delex'
+            self.result_path += '_delex'
+            self.vocab_path += '_delex'
+            self.vocab_emb += '_delex'
+        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)
+        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
+        if self.beam_search:
+            self.result_path += '_beam' + str(self.beam_size)
+        self.model_path += '.pkl'
+        self.result_path += '.csv'
+        self.vocab_path += '.p'
+        self.vocab_emb += '.npy'
+
+    def _focused_VQVAE_init(self):
+        self.decoder_network = 'LSTM'
+        self.various_go = False
+        self.commitment_cost = 0.25
+        self.grad_clip_norm = 1.0
+        self.max_turn = 200
+        self.emb_size = 300
+        self.emb_trainable = True
+        self.hidden_size = 300
+        self.codebook_size = 512
+        self.lr = 0.001
+        self.lr_decay = 1.0
+        self.batch_size = 128
+        self.dropout_rate = 0.0
+        self.epoch_num = 100  # triggered by early stop
+        self.cuda = True
+        self.early_stop_count = 30
+        self.vocab_size = None
+        self.remove_slot_value = True
+        self.encoder_layer_num = 1
+        self.beam_search = True
+        self.beam_size = 10
+        self.beam_len_bonus = 0.5
+        self.teacher_force = 50
+        self.slot_max_ts = 29
+        self.text_max_ts = 62
+        self.personality_size = 5
+        self.act_size = 8
+        self.glove_path = './data/glove.840B.300d.txt'
+
+    def _focused_VQVAE_update(self):
+        self.model_path = './models/focused_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.result_path = './results/focused_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.vocab_emb = './vocabs/embedding_' + self.domain
+        self.vocab_path = './vocabs/' + self.domain
         if self.remove_slot_value:
             self.model_path += '_delex'
             self.result_path += '_delex'

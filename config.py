@@ -41,7 +41,7 @@ class Config:
             'simple_seq2seq': self._simple_seq2seq_update,
             'simple_VQVAE': self._simple_VQVAE_update,
             'controlled_VQVAE': self._controlled_VQVAE_update,
-            'focused_VQVAE': self._focused_VQVAE_update(),
+            'focused_VQVAE': self._focused_VQVAE_update,
         }
         update_method[self.network]()
 
