@@ -394,7 +394,7 @@ class Model:
                             word_list += [self.reader.vocab.encode('EOS')]
                         #print(word_list)
                         decoded_sentence = self.reader.vocab.sentence_decode(word_list)
-                        print(decoded_sentence)
+                        logging.debug('%s'%(decoded_sentence))
                         batch_gen.append(word_list)
                         batch_gen_len.append(len(word_list))
                     text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
@@ -527,8 +527,8 @@ class Model:
     def count_params(self):
         module_parameters = filter(lambda p: p.requires_grad, self.m.parameters())
         param_cnt = sum([np.prod(p.size()) for p in module_parameters if p.requires_grad])
-        print('total trainable params: %d' % param_cnt)
-        print(self.m)
+        logging.info('total trainable params: %d' % param_cnt)
+        logging.info(self.m)
 
 
 def main(sys_args):
@@ -594,7 +594,7 @@ def main(sys_args):
         m.predict(data = 'test')
 
     print()
-    print("ret:")
+    print("return from main function:")
     print(ret)
 
     return ret

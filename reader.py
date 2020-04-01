@@ -297,7 +297,7 @@ class Reader(_ReaderBase):
                     max_slot_value = len(turn['slot_value_seq'])
 
             encoded_data[ap] = encoded_dial
-        print (max_slot, max_slot_value, max_ts, max_delex_ts)
+        print ('max_slot_len', max_slot, 'max_slot_value_len', max_slot_value, 'max_text_len', max_ts, 'max_delex_text_len', max_delex_ts)
         return encoded_data
 
     def _split_data(self, encoded_data, split):
@@ -340,7 +340,7 @@ class Reader(_ReaderBase):
             dev = train[:2000]
             train = train[2000:]
 
-        print (len(train), len(dev), len(test))
+        print ('training size', len(train), 'validation size',len(dev), 'testing size', len(test))
         return train, dev, test
 
 

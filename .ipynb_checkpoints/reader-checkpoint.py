@@ -229,7 +229,7 @@ class Reader(_ReaderBase):
             slot_value_seq = []
             for s, v in slot_value.items():
                 slot_value_seq += self.slot2phrase[s]
-                slot_value_seq += [v.lower()]
+                slot_value_seq += [v if 'Variable' in v else v.lower()]
                 #slot_value_seq += ['EOS_'+s]
             slot_seq = []
             for s, v in slot_value.items():
@@ -259,6 +259,10 @@ class Reader(_ReaderBase):
         return tokenized_data
 
     def _get_encoded_data(self, tokenized_data):
+        max_ts = 0
+        max_delex_ts = 0
+        max_slot = 0
+        max_slot_value = 0
         encoded_data = {}   
         for ap, dial in tokenized_data.items():
             encoded_dial = []
@@ -282,7 +286,7 @@ class Reader(_ReaderBase):
                     'personality': turn['personality'],
                     'slot_idx': np.array([1. if s in turn['slot_value'].keys() else 0. for s in self.slot_values.keys()])
                 })
-                '''
+
                 if len(turn['text_seq']) > max_ts:
                     max_ts = len(turn['text_seq'])
                 if len(turn['delex_text_seq']) > max_delex_ts:
@@ -291,9 +295,9 @@ class Reader(_ReaderBase):
                     max_slot = len(turn['slot_seq'])
                 if len(turn['slot_value_seq']) > max_slot_value:
                     max_slot_value = len(turn['slot_value_seq'])
-                '''
+
             encoded_data[ap] = encoded_dial
-        #print (max_slot, max_slot_value, max_ts, max_delex_ts)
+        print ('max_slot_len', max_slot, 'max_slot_value_len', max_slot_value, 'max_text_len', max_ts, 'max_delex_text_len', max_delex_ts)
         return encoded_data
 
     def _split_data(self, encoded_data, split):
@@ -336,7 +340,7 @@ class Reader(_ReaderBase):
             dev = train[:2000]
             train = train[2000:]
 
-        print (len(train), len(dev), len(test))
+        print ('training size', len(train), 'validation size',len(dev), 'testing size', len(test))
         return train, dev, test
 
 
@@ -371,8 +375,11 @@ class Reader(_ReaderBase):
                 self.vocab.add_item(w+'Variable')
                 self.vocab.add_item('EOS_'+w)
             if not self.cfg.remove_slot_value:
-                for w in self.slot_values.values():
-                    self.vocab.add_item(w)
+                for values in self.slot_values.values():
+                    for w in values:
+                        self.vocab.add_item(w)
+                        if 'Variable' not in w:
+                            self.vocab.add_item(w.lower())
         else:
             self.vocab.load_vocab(self.cfg.vocab_path)
 
@@ -452,29 +459,11 @@ class Reader(_ReaderBase):
             if self.cfg.network == 'classification':
                 idx = np.argmax(pred_y[i])
                 entry['pred_personality'] = self.idx2personality[idx]
-            elif 'seq2seq' in self.cfg.network:
+            elif 'seq2seq' in self.cfg.network or 'VQVAE' in self.cfg.network:
                 word_list = []
                 for t in pred_y[i]:
                     word = self.vocab.decode(t.item())
                     if '<go' not in word :
-                        word_list.append(word)
-                    if word == 'EOS':
-                        break
-                if self.cfg.remove_slot_value == True:
-                    entry['pred_delex_text_tokens'] = json.dumps(clearEOS(word_list))
-                    entry['pred_delex_text'] = ' '.join(clearEOS(word_list))
-                    entry['pred_text_tokens'] = json.dumps([])
-                    entry['pred_text'] = ''
-                else:
-                    entry['pred_text_tokens'] = json.dumps(clearEOS(word_list))
-                    entry['pred_text'] = ' '.join(clearEOS(word_list))
-                    entry['pred_delex_text_tokens'] = json.dumps([])
-                    entry['pred_delex_text'] = ''
-            elif 'VQVAE' in self.cfg.network:
-                word_list = []
-                for t in pred_y[0][i]:
-                    word = self.vocab.decode(t.item())
-                    if '<go' not in word:
                         word_list.append(word)
                     if word == 'EOS':
                         break

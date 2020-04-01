@@ -877,9 +877,9 @@ class Focused_VQVAE(torch.nn.Module):
         self.cfg = cfg
         self.vocab = vocab
         self.vae_encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
-                                              cfg.dropout_rate, cfg, self.vocab_vq_vae.embedding)
+                                              cfg.dropout_rate, cfg)
         self.encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
-                                          cfg.dropout_rate, cfg, self.vocab_vq_vae.embedding)
+                                          cfg.dropout_rate, cfg)
         if decay > 0.0:
             self.act_vq_vae = VectorQuantizerEMA(cfg, decay)
             self.personality_vq_vae = VectorQuantizerEMA(cfg, decay)
@@ -891,6 +891,10 @@ class Focused_VQVAE(torch.nn.Module):
                                                        cfg.dropout_rate)
         self.personality_predictor = MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size / 2),
                                                                cfg.personality_size, cfg.dropout_rate)
+        self.act_mlp = MLP(2*cfg.hidden_size, 4*cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
+        self.personality_mlp = MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
+
+        
         self.dec_loss = torch.nn.NLLLoss(ignore_index=0, reduction='mean')
         self.max_ts = cfg.text_max_ts
         self.beam_search = cfg.beam_search
@@ -989,12 +993,7 @@ class Focused_VQVAE(torch.nn.Module):
                     text_tm1 = text_tm1.view(1, -1)
                 text_dec_proba.append(proba)
                 text_dec_outs.append(dec_out)
-                # text vq vae
-                text_vq_loss, text_quantized, text_perplexity, _ = self.vocab_vq_vae(dec_out)
-                text_vq_loss_s.append(text_vq_loss)
-                text_perplexity_s.append(text_perplexity)
-                text_quantized_dec_outs.append(text_quantized)
-                #
+
             text_dec_proba = torch.stack(text_dec_proba, dim=0)  # [T,B,V]
             pred_y = text_dec_proba
             recon_loss = self.dec_loss( \

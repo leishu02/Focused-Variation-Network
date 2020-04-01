@@ -630,7 +630,7 @@ class Controlled_VQVAE(torch.nn.Module):
             return act_encoding, personality_encoding
         elif mode == 'test':
             pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
-            return pred_y, act_pred, personality_pred
+            return pred_y , act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
         if self.cfg.remove_slot_value == True:
@@ -753,7 +753,7 @@ class Controlled_VQVAE(torch.nn.Module):
                 else:
                     text_dec_idx = self.beam_search_decode(text_tm1,  last_hidden, slot_enc_out, personality_enc_out)
 
-                return text_dec_idx, act_pred, personality_pred
+                return text_dec_idx , act_pred, personality_pred
 
     def greedy_decode(self, text_tm1,  last_hidden, slot_enc_out, personality_enc_out):
         decoded = []
@@ -869,7 +869,280 @@ class Controlled_VQVAE(torch.nn.Module):
                 decoded.append(decoded_s)
 
         return [list(_.view(-1)) for _ in decoded]
-    
+
+
+class Focused_VQVAE(torch.nn.Module):
+    def __init__(self, cfg, vocab, decay=0, eos_m_token='EOS'):
+        super(Focused_VQVAE, self).__init__()
+        self.cfg = cfg
+        self.vocab = vocab
+        self.vae_encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
+                                              cfg.dropout_rate, cfg)
+        self.encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
+                                          cfg.dropout_rate, cfg)
+        if decay > 0.0:
+            self.act_vq_vae = VectorQuantizerEMA(cfg, decay)
+            self.personality_vq_vae = VectorQuantizerEMA(cfg, decay)
+        else:
+            self.act_vq_vae = VectorQuantizer(cfg)
+            self.personality_vq_vae = VectorQuantizer(cfg)
+        self.decoder = Attn_RNN_Decoder(len(vocab), cfg.emb_size, 2 * cfg.hidden_size, cfg.dropout_rate, vocab, cfg)
+        self.act_predictor = MultiLabel_Classification(cfg.hidden_size, int(cfg.hidden_size / 2), cfg.act_size,
+                                                       cfg.dropout_rate)
+        self.personality_predictor = MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size / 2),
+                                                               cfg.personality_size, cfg.dropout_rate)
+        self.act_mlp = MLP(2*cfg.hidden_size, 4*cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
+        self.personality_mlp = MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
+
+        
+        self.dec_loss = torch.nn.NLLLoss(ignore_index=0, reduction='mean')
+        self.max_ts = cfg.text_max_ts
+        self.beam_search = cfg.beam_search
+        self.teacher_force = cfg.teacher_force
+        if self.beam_search:
+            self.beam_size = cfg.beam_size
+            self.eos_m_token = eos_m_token
+            self.eos_token_idx = self.vocab.encode(eos_m_token)
+
+    def forward(self, x, gt_y, mode, **kwargs):
+        if mode == 'train' or mode == 'valid':
+            loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss = self.forward_turn(x, gt_y,
+                                                                                                               mode,
+                                                                                                               **kwargs)
+            return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
+        elif mode == 'getDist':
+            act_encoding, personality_encoding = self.forward_turn(x, gt_y, mode, **kwargs)
+            return act_encoding, personality_encoding
+        elif mode == 'test':
+            pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
+            return pred_y, act_pred, personality_pred
+
+    def forward_turn(self, x, gt_y, mode, **kwargs):
+        if self.cfg.remove_slot_value == True:
+            x_len = kwargs['slot_len']  # batchsize
+            x_np = kwargs['slot_np']  # seqlen, batchsize
+            y_len = kwargs['delex_text_len']  # batchsize
+            y_np = kwargs['delex_text_np']  # batchsize
+        else:
+            x_len = kwargs['slot_value_len']  # seqlen, batchsize
+            x_np = kwargs['slot_value_np']  # batchsize
+            y_len = kwargs['text_len']  # batchsize
+            y_np = kwargs['text_np']  # seqlen, batchsize
+
+        personality_idx = kwargs['personality_idx']
+        personality_seq = kwargs['personality_seq']
+        personality_len = kwargs['personality_len']
+        act_idx = kwargs['act_idx']
+
+        batch_size = x.size(1)
+        x_enc_out, (h, c), _ = self.vae_encoder(gt_y, y_len)
+        z = torch.cat([h[0], h[1]], dim=-1)
+        act_z = self.act_mlp(z)
+        act_vq_loss, act_quantized, act_perplexity, act_encoding = self.act_vq_vae(act_z)
+        personality_z = self.personality_mlp(z)
+        personality_vq_loss, personality_quantized, personality_perplexity, personality_encoding = self.personality_vq_vae(
+            personality_z)
+        text_tm1 = cuda_(torch.autograd.Variable(torch.ones(1, batch_size).long()), self.cfg)  # GO token
+        text_length = gt_y.size(0)
+        text_dec_proba = []
+        text_dec_outs = []
+        text_quantized_dec_outs = []
+        text_vq_loss_s = []
+        text_perplexity_s = []
+
+        # act and personality distribution act_encoding (B, codebook_size)
+        personality_enc_out, personality_hidden, personality_emb = self.encoder(personality_seq, personality_len,
+                                                                                enc_out='cat')
+        slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, personality_hidden, enc_out='cat')
+        quantized = torch.cat([act_quantized, personality_quantized], dim=-1)
+        # decoder_c = cuda_(torch.autograd.Variable(torch.zeros(quantized.size())), self.cfg)
+        decoder_c = torch.cat([slot_hidden[1][0], slot_hidden[1][1]], dim=-1)
+        '''
+        personality_emb_copy = cuda_(torch.autograd.Variable(self.personality_vq_vae._embedding.weight.data.clone()), self.cfg).repeat(batch_size, 1, 1).transpose(0, 1)
+        act_emb_copy = cuda_(torch.autograd.Variable(self.act_vq_vae._embedding.weight.data.clone()), self.cfg).repeat(batch_size, 1, 1).transpose(0, 1)
+        personality_dist = self.personality_attn(personality_hidden[0][0]+personality_hidden[0][1], personality_emb_copy, return_normalize=True).squeeze(1)
+        slot_dist = self.slot_attn(slot_hidden[0][0]+slot_hidden[0][1], act_emb_copy, return_normalize=True).squeeze(1)
+        #
+        '''
+        if mode == 'getDist':
+            return act_encoding, personality_encoding
+
+        elif mode == 'train':
+            if self.cfg.decoder_network == 'LSTM':
+                last_hidden = (quantized.unsqueeze(0), decoder_c.unsqueeze(0))
+            else:
+                last_hidden = quantized.unsqueeze(0)
+            act_loss = self.act_predictor(act_quantized, act_idx, mode)
+            personality_loss = self.personality_predictor(personality_quantized, personality_idx, mode)
+            ##prepare dist from encoding
+            '''
+            personality_encoding_dist = getDist(personality_idx, personality_encoding)
+            slot_encoding_dist = getDist(act_idx, act_encoding)
+
+            personality_KLdiv = torch.nn.functional.kl_div(personality_dist.log(), personality_encoding_dist)
+            slot_KLdiv = torch.nn.functional.kl_div(slot_dist.log(), slot_encoding_dist)
+            '''
+            ##
+            for t in range(text_length):
+                teacher_forcing = toss_(self.teacher_force)
+                proba, last_hidden, dec_out = self.decoder(text_tm1, last_hidden, slot_enc_out, personality_enc_out)
+                if teacher_forcing:
+                    text_tm1 = gt_y[t].view(1, -1)
+                else:
+                    _, text_tm1 = torch.topk(proba, 1)
+                    text_tm1 = text_tm1.view(1, -1)
+                text_dec_proba.append(proba)
+                text_dec_outs.append(dec_out)
+
+            text_dec_proba = torch.stack(text_dec_proba, dim=0)  # [T,B,V]
+            pred_y = text_dec_proba
+            recon_loss = self.dec_loss( \
+                torch.log(pred_y.view(-1, pred_y.size(2))), \
+                gt_y.view(-1))
+
+            loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss
+            return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
+        else:
+            act_sample_idx = kwargs['act_sample_idx']
+            personality_sample_idx = kwargs['personality_sample_idx']
+            act_sample_emb = self.act_vq_vae._embedding(act_sample_idx)
+            personality_sample_emb = self.personality_vq_vae._embedding(personality_sample_idx)
+            sample_quantized = torch.cat([act_sample_emb, personality_sample_emb], dim=-1)
+            if self.cfg.decoder_network == 'LSTM':
+                last_hidden = (sample_quantized.transpose(0, 1), decoder_c.unsqueeze(0))
+            else:
+                last_hidden = quantized.transpose(0, 1)
+            act_pred = self.act_predictor(act_quantized, act_idx, mode)
+            personality_pred = self.personality_predictor(personality_quantized, personality_idx, mode)
+            if mode == 'test':
+                if not self.cfg.beam_search:
+                    text_dec_idx = self.greedy_decode(text_tm1, last_hidden, slot_enc_out, personality_enc_out)
+
+                else:
+                    text_dec_idx = self.beam_search_decode(text_tm1, last_hidden, slot_enc_out, personality_enc_out)
+
+                return text_dec_idx, act_pred, personality_pred
+
+    def greedy_decode(self, text_tm1, last_hidden, slot_enc_out, personality_enc_out):
+        decoded = []
+        for t in range(self.max_ts):
+            proba, last_hidden, _ = self.decoder(text_tm1, last_hidden, slot_enc_out, personality_enc_out)
+            mt_proba, mt_index = torch.topk(proba, 1)  # [B,1]
+            mt_index = mt_index.data.view(-1)
+            decoded.append(mt_index.clone())
+            for i in range(mt_index.size(0)):
+                if mt_index[i] >= len(self.vocab):
+                    mt_index[i] = 2  # unk
+            text_tm1 = cuda_(torch.autograd.Variable(mt_index).view(1, -1), self.cfg)
+        decoded = torch.stack(decoded, dim=0).transpose(0, 1)
+        decoded = list(decoded)
+        return [list(_) for _ in decoded]
+
+    def beam_search_decode_single(self, text_tm1, last_hidden, slot_enc_out, personality_enc_out):
+        eos_token_id = self.eos_token_idx
+        batch_size = text_tm1.size(1)
+        if batch_size != 1:
+            raise ValueError('"Beam search single" requires batch size to be 1')
+
+        class BeamState:
+            def __init__(self, score, last_hidden, decoded, length):
+                """
+                Beam state in beam decoding
+                :param score: sum of log-probabilities
+                :param last_hidden: last hidden
+                :param decoded: list of *Variable[1*1]* of all decoded words
+                :param length: current decoded sentence length
+                """
+                self.score = score
+                self.last_hidden = last_hidden
+                self.decoded = decoded
+                self.length = length
+
+            def update_clone(self, score_incre, last_hidden, decoded_t):
+                decoded = copy.copy(self.decoded)
+                decoded.append(decoded_t)
+                clone = BeamState(self.score + score_incre, last_hidden, decoded, self.length + 1)
+                return clone
+
+        def score_bonus(state, decoded):
+            bonus = self.cfg.beam_len_bonus
+            return bonus
+
+        def soft_score_incre(score, turn):
+            return score
+
+        finished, failed = [], []
+        states = []  # sorted by score decreasingly
+        dead_k = 0
+        states.append(BeamState(0, last_hidden, [text_tm1], 0))
+        for t in range(self.max_ts):
+            new_states = []
+            k = 0
+            while k < len(states) and k < self.beam_size - dead_k:
+                state = states[k]
+                last_hidden, text_tm1 = state.last_hidden, state.decoded[-1]
+                proba, last_hidden, _ = self.decoder(text_tm1, last_hidden, slot_enc_out, personality_enc_out)
+                proba = torch.log(proba)
+                mt_proba, mt_index = torch.topk(proba, self.beam_size - dead_k)  # [1,K]
+                for new_k in range(self.beam_size - dead_k):
+                    score_incre = soft_score_incre(mt_proba[0][new_k].item(), t) + score_bonus(state,
+                                                                                               mt_index[0][
+                                                                                                   new_k].item())
+                    if len(new_states) >= self.beam_size - dead_k and state.score + score_incre < new_states[-1].score:
+                        break
+                    decoded_t = mt_index[0][new_k]
+                    if decoded_t.item() >= len(self.vocab):
+                        decoded_t.item() == 2  # unk
+                    if decoded_t.item() == self.eos_token_idx:
+                        finished.append(state)
+                    else:
+                        decoded_t = decoded_t.view(1, -1)
+                        new_state = state.update_clone(score_incre, last_hidden, decoded_t)
+                        new_states.append(new_state)
+
+                k += 1
+            if self.beam_size - dead_k < 0:
+                break
+            new_states = new_states[:self.beam_size - dead_k]
+            new_states.sort(key=lambda x: -x.score)
+            states = new_states
+
+            if t == self.max_ts - 1 and not finished:
+                finished = failed
+                print('FAIL')
+                if not finished:
+                    finished.append(states[0])
+
+        finished.sort(key=lambda x: -x.score)
+        decoded_t = finished[0].decoded
+        decoded_t = [_.view(-1).item() for _ in decoded_t]
+        # decoded_sentence = self.vocab.sentence_decode(decoded_t, self.eos_m_token)
+        # print(decoded_sentence)
+        generated = torch.cat(finished[0].decoded, dim=1).data  # [B=1, T]
+        return generated
+
+    def beam_search_decode(self, text_tm1, last_hidden, slot_enc_out, personality_enc_out):
+        decoded = []
+        if self.cfg.decoder_network == 'LSTM':
+            vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden[0], 1, dim=1), torch.split(last_hidden[1],
+                                                                                                       1, dim=1), \
+                   torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1)
+            for i, (text_tm1_s, last_hidden_h_s, last_hidden_c_s, slot_enc_out_s, personality_enc_out_s) \
+                    in enumerate(zip(*vars)):
+                decoded_s = self.beam_search_decode_single(text_tm1_s, (last_hidden_h_s, last_hidden_c_s),
+                                                           slot_enc_out_s, personality_enc_out_s)
+                decoded.append(decoded_s)
+        else:
+            vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(slot_enc_out, 1,
+                                                                                                    dim=1), torch.split(
+                personality_enc_out, 1, dim=1)
+            for i, (text_tm1_s, last_hidden_s, slot_enc_out_s, personality_enc_out_s) \
+                    in enumerate(zip(*vars)):
+                decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s, slot_enc_out_s,
+                                                           personality_enc_out_s)
+                decoded.append(decoded_s)
+
+        return [list(_.view(-1)) for _ in decoded]
     
 class VAE(torch.nn.Module):
     def __init__(self, hidden_size, var_size):
@@ -1097,7 +1370,7 @@ class Seq2Seq(torch.nn.Module):
         batch_size = x.size(1)        
         personality_enc_out, personality_hidden, personality_emb = self.encoder(personality_seq, personality_len)
         slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, personality_hidden)
-        last_hidden = slot_hidden[:-1]
+        last_hidden = slot_hidden[(self.cfg.encoder_layer_num-1)*2:-1]
         
         if self.cfg.VAE:
             z, decode_z, mu, logvar = self.vae(last_hidden)
@@ -1310,3 +1583,5 @@ def get_network(cfg, vocab):
             return VQVAE(cfg, vocab)
         elif 'controlled' in cfg.network:
             return Controlled_VQVAE(cfg, vocab)
+        elif 'focused' in cfg.network:
+            return Focused_VQVAE(cfg, vocab)

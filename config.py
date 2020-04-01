@@ -346,8 +346,8 @@ class Config:
     def _init_logging_handler(self):
         current_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         stderr_handler = logging.StreamHandler()
-        #file_handler = logging.FileHandler('./log/log_{}.txt'.format(current_time))
-        logging.basicConfig(handlers=[stderr_handler])#, file_handler
+        file_handler = logging.FileHandler('./log/log_{}.txt'.format(current_time))
+        logging.basicConfig(handlers=[file_handler])#, stderr_handler
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
 
