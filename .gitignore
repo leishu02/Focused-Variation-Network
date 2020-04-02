@@ -7,3 +7,4 @@ data/glove.840B.300d.txt
 .idea/workspace.xml
 .idea
 *.xml
+venv
