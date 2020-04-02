@@ -26,12 +26,12 @@ def match(gt_list, pred_list):
 class Evaluator:
     def __init__(self, cfg):
         self.cfg = cfg
-        self.file = open(cfg.result_path, 'r')
+        self.file = open(cfg.result_path, 'r', encoding="utf8")
         self.meta = []
         self.metric_dict = {}
         self.filename = cfg.result_path.split('/')[-1]
         dump_dir = './sheets/' + self.filename.replace('.csv', '.report.txt')
-        self.dump_file = open(dump_dir, 'w')
+        self.dump_file = open(dump_dir, 'w', encoding="utf8")
 
     def run_metrics(self):
         data = self.read_result_data()
@@ -97,10 +97,10 @@ class Evaluator:
             pred_dir = cwd+'/sheets/' + self.filename.replace('.csv', '_'+str(i)+'_pred.txt')
             truth_dir = cwd+'/sheets/' + self.filename.replace('.csv', '_'+str(i)+'_truth.txt')
             cmds.append(' '.join([self.cfg.python_path, cwd+'/e2e-metrics/measure_scores.py', truth_dir, pred_dir]))
-            with open(pred_dir, 'w')as outfile:
+            with open(pred_dir, 'w', encoding="utf8")as outfile:
                 for d in gen[chunk[i]:chunk[i+1]]:
                     outfile.write(d+'\n')
-            with open(truth_dir, 'w')as outfile:
+            with open(truth_dir, 'w', encoding="utf8")as outfile:
                 for ap in truth_ap[chunk[i]:chunk[i+1]]:
                     for d in truth_ap_dict[ap]:
                         outfile.write(d+'\n')

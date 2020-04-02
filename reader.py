@@ -487,7 +487,7 @@ class Reader(_ReaderBase):
             results.append(entry)
         write_header = False
         if not self.result_file:
-            self.result_file = open(self.cfg.result_path, 'w')
+            self.result_file = open(self.cfg.result_path, 'w', encoding="utf8")
             self.result_file.write(str(self.cfg))
             write_header = True
 
@@ -513,7 +513,7 @@ class Reader(_ReaderBase):
             logging.info('embedding.  mean: %f  std %f' % (old_avg, old_std))
             return vec_array
         else:
-            ef = open(self.cfg.glove_path, 'r')
+            ef = open(self.cfg.glove_path, 'r', encoding="utf8")
             cnt = 0
             vec_array = initial_embedding_np
             old_avg = np.average(vec_array)
