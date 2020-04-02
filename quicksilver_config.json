@@ -1,0 +1,23 @@
+{
+    "job_config": {
+        "cluster": "opusprodda1",
+        "constraints": {
+            "sku": "1080ti"
+        },
+        "cpus": 5,
+        "diskMB": 64000,
+        "dockerImage": "ailabs-ps-gpu",
+        "gpus": 1,
+        "on_boot": "cd /home/work",
+        "priority": 1000,
+        "ramMB": 10000,
+        "tag": "master-test-2020_4_1_15_13_1"
+    },
+    "jupyter_config": {
+        "cpus": 5,
+        "diskMB": 64000,
+        "gpus": 0,
+        "priority": 1000,
+        "ramMB": 10000
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "strategy": "random",
+    "num_experiments": 4,
+    "params": {
+        "encoder_layer_num": {
+            "type": "int",
+            "scale": "linear",
+            "min": 1,
+            "max": 2
+        },
+        "decoder_network": {
+            "type": "category",
+            "list": ["LSTM", "GRU"]
+        }
+    },
+    "job_name": "ps_hp_search_test/{unique}/eln_{encoder_layer_num}/dn_{decoder_network}",
+    "execute" : {
+        "file": "wrapper.py",
+        "function": "wrapper",
+        "kwargs": {
+            "epoch_num": 2
+        }
+    }
+}

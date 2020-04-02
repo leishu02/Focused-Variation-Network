@@ -1,0 +1,300 @@
+ps_hp_search/1585666256263/eln_1/cs_512 1024 2048/cc_0.5034963854029859/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjUwMzQ5NjM4NTQwMjk4NTksICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.5034963854029859, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256266/eln_1/cs_512 1024 2048/cc_0.21711348367162475/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjIxNzExMzQ4MzY3MTYyNDc1LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.21711348367162475, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256268/eln_4/cs_512 1024 2048/cc_0.9721231358970467/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjk3MjEyMzEzNTg5NzA0NjcsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.9721231358970467, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256270/eln_5/cs_512 1024 2048/cc_0.7209345423620838/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjcyMDkzNDU0MjM2MjA4MzgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.7209345423620838, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256273/eln_1/cs_512 1024 2048/cc_0.7466468143783846/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjc0NjY0NjgxNDM3ODM4NDYsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.7466468143783846, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256275/eln_1/cs_512 1024 2048/cc_0.3891461410994248/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjM4OTE0NjE0MTA5OTQyNDgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.3891461410994248, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256278/eln_1/cs_512 1024 2048/cc_0.46195359126471747/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQ2MTk1MzU5MTI2NDcxNzQ3LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.46195359126471747, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256281/eln_5/cs_512 1024 2048/cc_0.5786246330433638/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjU3ODYyNDYzMzA0MzM2MzgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.5786246330433638, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256283/eln_5/cs_512 1024 2048/cc_0.1435707033210013/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjE0MzU3MDcwMzMyMTAwMTMsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.1435707033210013, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256285/eln_1/cs_512 1024 2048/cc_0.48941409342256015/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQ4OTQxNDA5MzQyMjU2MDE1LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.48941409342256015, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256287/eln_3/cs_512 1024 2048/cc_0.8679927076705799/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjg2Nzk5MjcwNzY3MDU3OTksICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.8679927076705799, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256290/eln_5/cs_512 1024 2048/cc_0.41174706178968246/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQxMTc0NzA2MTc4OTY4MjQ2LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.41174706178968246, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256292/eln_2/cs_512 1024 2048/cc_0.37840390156457626/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjM3ODQwMzkwMTU2NDU3NjI2LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.37840390156457626, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256295/eln_3/cs_512 1024 2048/cc_0.7053050119892232/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjcwNTMwNTAxMTk4OTIyMzIsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.7053050119892232, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256297/eln_1/cs_512 1024 2048/cc_0.7509502500006681/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjc1MDk1MDI1MDAwMDY2ODEsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.7509502500006681, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256300/eln_4/cs_512 1024 2048/cc_0.8616652868976138/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjg2MTY2NTI4Njg5NzYxMzgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.8616652868976138, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256302/eln_1/cs_512 1024 2048/cc_0.16688907495910654/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjE2Njg4OTA3NDk1OTEwNjU0LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.16688907495910654, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256305/eln_2/cs_512 1024 2048/cc_0.5608666697756903/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjU2MDg2NjY2OTc3NTY5MDMsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.5608666697756903, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256307/eln_1/cs_512 1024 2048/cc_0.40007266591164947/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQwMDA3MjY2NTkxMTY0OTQ3LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.40007266591164947, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256309/eln_3/cs_512 1024 2048/cc_0.6532114507931354/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjY1MzIxMTQ1MDc5MzEzNTQsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.6532114507931354, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256311/eln_2/cs_512 1024 2048/cc_0.013469922744159035/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjAxMzQ2OTkyMjc0NDE1OTAzNSwgImxyIjogIjAuMDAxIDAuMDAzIDAuMDAwMyJ9fQ== --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.013469922744159035, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256313/eln_3/cs_512 1024 2048/cc_0.3028588381772811/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjMwMjg1ODgzODE3NzI4MTEsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.3028588381772811, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256316/eln_4/cs_512 1024 2048/cc_0.5774585550177359/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjU3NzQ1ODU1NTAxNzczNTksICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.5774585550177359, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256318/eln_1/cs_512 1024 2048/cc_0.38988003144608674/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjM4OTg4MDAzMTQ0NjA4Njc0LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.38988003144608674, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256321/eln_4/cs_512 1024 2048/cc_0.5861604965697735/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjU4NjE2MDQ5NjU2OTc3MzUsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.5861604965697735, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256323/eln_2/cs_512 1024 2048/cc_0.44954265678176375/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQ0OTU0MjY1Njc4MTc2Mzc1LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.44954265678176375, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256326/eln_4/cs_512 1024 2048/cc_0.8805192227755092/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjg4MDUxOTIyMjc3NTUwOTIsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.8805192227755092, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256329/eln_5/cs_512 1024 2048/cc_0.1920294210082536/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjE5MjAyOTQyMTAwODI1MzYsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.1920294210082536, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256331/eln_3/cs_512 1024 2048/cc_0.23625953500949437/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjIzNjI1OTUzNTAwOTQ5NDM3LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.23625953500949437, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256334/eln_3/cs_512 1024 2048/cc_0.23603844981437871/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjIzNjAzODQ0OTgxNDM3ODcxLCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.23603844981437871, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256337/eln_5/cs_512 1024 2048/cc_0.3145608463395487/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjMxNDU2MDg0NjMzOTU0ODcsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.3145608463395487, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256339/eln_2/cs_512 1024 2048/cc_0.45914126734689753/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQ1OTE0MTI2NzM0Njg5NzUzLCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.45914126734689753, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256342/eln_2/cs_512 1024 2048/cc_0.02068108111003819/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjAyMDY4MTA4MTExMDAzODE5LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.02068108111003819, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256345/eln_1/cs_512 1024 2048/cc_0.20085942219389197/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjIwMDg1OTQyMjE5Mzg5MTk3LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.20085942219389197, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256347/eln_5/cs_512 1024 2048/cc_0.23336253780845528/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjIzMzM2MjUzNzgwODQ1NTI4LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.23336253780845528, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256350/eln_3/cs_512 1024 2048/cc_0.6958859336777338/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjY5NTg4NTkzMzY3NzczMzgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.6958859336777338, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256352/eln_5/cs_512 1024 2048/cc_0.5028525838169817/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjUwMjg1MjU4MzgxNjk4MTcsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.5028525838169817, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256354/eln_2/cs_512 1024 2048/cc_0.14190072827407152/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjE0MTkwMDcyODI3NDA3MTUyLCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.14190072827407152, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256357/eln_4/cs_512 1024 2048/cc_0.08032909712423164/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjA4MDMyOTA5NzEyNDIzMTY0LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.08032909712423164, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256359/eln_2/cs_512 1024 2048/cc_0.030189527630343882/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjAzMDE4OTUyNzYzMDM0Mzg4MiwgImxyIjogIjAuMDAxIDAuMDAzIDAuMDAwMyJ9fQ== --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.030189527630343882, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256361/eln_4/cs_512 1024 2048/cc_0.25787024123499647/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjI1Nzg3MDI0MTIzNDk5NjQ3LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.25787024123499647, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256364/eln_1/cs_512 1024 2048/cc_0.23852532850389518/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjIzODUyNTMyODUwMzg5NTE4LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.23852532850389518, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256366/eln_1/cs_512 1024 2048/cc_0.985048757320724/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjk4NTA0ODc1NzMyMDcyNCwgImxyIjogIjAuMDAxIDAuMDAzIDAuMDAwMyJ9fQ== --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.985048757320724, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256369/eln_4/cs_512 1024 2048/cc_0.6263989532366824/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjYyNjM5ODk1MzIzNjY4MjQsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.6263989532366824, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256372/eln_3/cs_512 1024 2048/cc_0.03570238010327831/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjAzNTcwMjM4MDEwMzI3ODMxLCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.03570238010327831, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256375/eln_2/cs_512 1024 2048/cc_0.6392192388543089/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjYzOTIxOTIzODg1NDMwODksICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.6392192388543089, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256377/eln_1/cs_512 1024 2048/cc_0.6094284699536614/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjYwOTQyODQ2OTk1MzY2MTQsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.6094284699536614, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256380/eln_5/cs_512 1024 2048/cc_0.5087528883104909/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjUwODc1Mjg4ODMxMDQ5MDksICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.5087528883104909, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256382/eln_3/cs_512 1024 2048/cc_0.021662792774409856/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjAyMTY2Mjc5Mjc3NDQwOTg1NiwgImxyIjogIjAuMDAxIDAuMDAzIDAuMDAwMyJ9fQ== --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.021662792774409856, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256385/eln_2/cs_512 1024 2048/cc_0.774793523264632/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjc3NDc5MzUyMzI2NDYzMiwgImxyIjogIjAuMDAxIDAuMDAzIDAuMDAwMyJ9fQ== --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.774793523264632, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256387/eln_5/cs_512 1024 2048/cc_0.1674704875948847/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjE2NzQ3MDQ4NzU5NDg4NDcsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.1674704875948847, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256390/eln_5/cs_512 1024 2048/cc_0.7065281417110822/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjcwNjUyODE0MTcxMTA4MjIsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.7065281417110822, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256392/eln_5/cs_512 1024 2048/cc_0.06369199745682552/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjA2MzY5MTk5NzQ1NjgyNTUyLCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.06369199745682552, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256395/eln_5/cs_512 1024 2048/cc_0.7014912674357934/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjcwMTQ5MTI2NzQzNTc5MzQsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.7014912674357934, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256398/eln_3/cs_512 1024 2048/cc_0.9104362340782142/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjkxMDQzNjIzNDA3ODIxNDIsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.9104362340782142, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256401/eln_4/cs_512 1024 2048/cc_0.8363325384495918/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjgzNjMzMjUzODQ0OTU5MTgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.8363325384495918, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256404/eln_1/cs_512 1024 2048/cc_0.4935953940472696/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQ5MzU5NTM5NDA0NzI2OTYsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.4935953940472696, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256406/eln_5/cs_512 1024 2048/cc_0.10751947554130392/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjEwNzUxOTQ3NTU0MTMwMzkyLCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.10751947554130392, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256409/eln_1/cs_512 1024 2048/cc_0.29858176253349955/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjI5ODU4MTc2MjUzMzQ5OTU1LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.29858176253349955, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256411/eln_1/cs_512 1024 2048/cc_0.6361141288551149/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjYzNjExNDEyODg1NTExNDksICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.6361141288551149, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256413/eln_1/cs_512 1024 2048/cc_0.11142949161524696/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjExMTQyOTQ5MTYxNTI0Njk2LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.11142949161524696, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256416/eln_4/cs_512 1024 2048/cc_0.39624740541312375/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjM5NjI0NzQwNTQxMzEyMzc1LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.39624740541312375, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256419/eln_4/cs_512 1024 2048/cc_0.07250798259713409/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjA3MjUwNzk4MjU5NzEzNDA5LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.07250798259713409, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256422/eln_2/cs_512 1024 2048/cc_0.8561863601062255/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjg1NjE4NjM2MDEwNjIyNTUsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.8561863601062255, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256424/eln_3/cs_512 1024 2048/cc_0.151277522485596/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjE1MTI3NzUyMjQ4NTU5NiwgImxyIjogIjAuMDAxIDAuMDAzIDAuMDAwMyJ9fQ== --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.151277522485596, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256426/eln_5/cs_512 1024 2048/cc_0.7427575900488546/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjc0Mjc1NzU5MDA0ODg1NDYsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.7427575900488546, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256429/eln_3/cs_512 1024 2048/cc_0.23779232966699193/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjIzNzc5MjMyOTY2Njk5MTkzLCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.23779232966699193, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256431/eln_2/cs_512 1024 2048/cc_0.8035376661826653/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjgwMzUzNzY2NjE4MjY2NTMsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.8035376661826653, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256434/eln_5/cs_512 1024 2048/cc_0.5222668589284438/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjUyMjI2Njg1ODkyODQ0MzgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.5222668589284438, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256437/eln_2/cs_512 1024 2048/cc_0.9862676053575791/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjk4NjI2NzYwNTM1NzU3OTEsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.9862676053575791, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256440/eln_4/cs_512 1024 2048/cc_0.37479758655203865/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjM3NDc5NzU4NjU1MjAzODY1LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.37479758655203865, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256444/eln_1/cs_512 1024 2048/cc_0.9864467521723648/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjk4NjQ0Njc1MjE3MjM2NDgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.9864467521723648, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256446/eln_4/cs_512 1024 2048/cc_0.8300889089291108/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjgzMDA4ODkwODkyOTExMDgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.8300889089291108, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256449/eln_2/cs_512 1024 2048/cc_0.3423105032835767/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjM0MjMxMDUwMzI4MzU3NjcsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.3423105032835767, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256451/eln_2/cs_512 1024 2048/cc_0.8570503198015823/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjg1NzA1MDMxOTgwMTU4MjMsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.8570503198015823, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256454/eln_5/cs_512 1024 2048/cc_0.5579280889735151/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjU1NzkyODA4ODk3MzUxNTEsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.5579280889735151, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256456/eln_5/cs_512 1024 2048/cc_0.0076649975355101985/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjAwNzY2NDk5NzUzNTUxMDE5ODUsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.0076649975355101985, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256459/eln_3/cs_512 1024 2048/cc_0.3288684552356669/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjMyODg2ODQ1NTIzNTY2NjksICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.3288684552356669, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256462/eln_4/cs_512 1024 2048/cc_0.010467263576383612/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjAxMDQ2NzI2MzU3NjM4MzYxMiwgImxyIjogIjAuMDAxIDAuMDAzIDAuMDAwMyJ9fQ== --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.010467263576383612, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256465/eln_3/cs_512 1024 2048/cc_0.3693686683701346/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjM2OTM2ODY2ODM3MDEzNDYsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.3693686683701346, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256467/eln_3/cs_512 1024 2048/cc_0.4693350576365628/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQ2OTMzNTA1NzYzNjU2MjgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.4693350576365628, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256470/eln_5/cs_512 1024 2048/cc_0.8611048073069498/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjg2MTEwNDgwNzMwNjk0OTgsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.8611048073069498, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256473/eln_4/cs_512 1024 2048/cc_0.24286088553779028/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjI0Mjg2MDg4NTUzNzc5MDI4LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.24286088553779028, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256475/eln_1/cs_512 1024 2048/cc_0.5404689344044276/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjU0MDQ2ODkzNDQwNDQyNzYsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.5404689344044276, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256478/eln_4/cs_512 1024 2048/cc_0.29043862370909834/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjI5MDQzODYyMzcwOTA5ODM0LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.29043862370909834, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256480/eln_2/cs_512 1024 2048/cc_0.4172694344055673/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQxNzI2OTQzNDQwNTU2NzMsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.4172694344055673, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256483/eln_4/cs_512 1024 2048/cc_0.6700896623200496/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjY3MDA4OTY2MjMyMDA0OTYsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.6700896623200496, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256486/eln_2/cs_512 1024 2048/cc_0.6609948092581237/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjY2MDk5NDgwOTI1ODEyMzcsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.6609948092581237, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256489/eln_3/cs_512 1024 2048/cc_0.3323260593712939/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjMzMjMyNjA1OTM3MTI5MzksICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.3323260593712939, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256492/eln_3/cs_512 1024 2048/cc_0.6678384094312492/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjY2NzgzODQwOTQzMTI0OTIsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.6678384094312492, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256495/eln_3/cs_512 1024 2048/cc_0.44398723576971777/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjQ0Mzk4NzIzNTc2OTcxNzc3LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.44398723576971777, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256498/eln_5/cs_512 1024 2048/cc_0.5513541289044664/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjU1MTM1NDEyODkwNDQ2NjQsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.5513541289044664, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256501/eln_1/cs_512 1024 2048/cc_0.014111097230192438/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjAxNDExMTA5NzIzMDE5MjQzOCwgImxyIjogIjAuMDAxIDAuMDAzIDAuMDAwMyJ9fQ== --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.014111097230192438, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256504/eln_5/cs_512 1024 2048/cc_0.9300607390868135/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjkzMDA2MDczOTA4NjgxMzUsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.9300607390868135, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256507/eln_4/cs_512 1024 2048/cc_0.26396819067329835/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjI2Mzk2ODE5MDY3MzI5ODM1LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.26396819067329835, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256509/eln_5/cs_512 1024 2048/cc_0.9220116879996939/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjkyMjAxMTY4Nzk5OTY5MzksICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 5, "codebook_size": "512 1024 2048", "commitment_cost": 0.9220116879996939, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256512/eln_4/cs_512 1024 2048/cc_0.1335752996854801/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogNCwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjEzMzU3NTI5OTY4NTQ4MDEsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 4, "codebook_size": "512 1024 2048", "commitment_cost": 0.1335752996854801, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256514/eln_3/cs_512 1024 2048/cc_0.7795905983372091/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMywgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjc3OTU5MDU5ODMzNzIwOTEsICJsciI6ICIwLjAwMSAwLjAwMyAwLjAwMDMifX0= --b64 
+#{"epoch_num": 100, "encoder_layer_num": 3, "codebook_size": "512 1024 2048", "commitment_cost": 0.7795905983372091, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256517/eln_1/cs_512 1024 2048/cc_0.37508682232542445/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMSwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjM3NTA4NjgyMjMyNTQyNDQ1LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 1, "codebook_size": "512 1024 2048", "commitment_cost": 0.37508682232542445, "lr": "0.001 0.003 0.0003"}
+
+ps_hp_search/1585666256520/eln_2/cs_512 1024 2048/cc_0.33909451403742297/lr_0.001 0.003 0.0003 python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDEwMCwgImVuY29kZXJfbGF5ZXJfbnVtIjogMiwgImNvZGVib29rX3NpemUiOiAiNTEyIDEwMjQgMjA0OCIsICJjb21taXRtZW50X2Nvc3QiOiAwLjMzOTA5NDUxNDAzNzQyMjk3LCAibHIiOiAiMC4wMDEgMC4wMDMgMC4wMDAzIn19 --b64 
+#{"epoch_num": 100, "encoder_layer_num": 2, "codebook_size": "512 1024 2048", "commitment_cost": 0.33909451403742297, "lr": "0.001 0.003 0.0003"}
+

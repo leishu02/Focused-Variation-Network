@@ -1,0 +1,34 @@
+{
+    "strategy": "random",
+    "num_experiments": 100,
+    "params": {
+        "encoder_layer_num": {
+            "type": "int",
+            "scale": "linear",
+            "min": 1,
+            "max": 5
+        },
+        "codebook_size": {
+            "type": "category",
+            "list": [512 1024 2048]
+        },
+        "commitment_cost": {
+            "type": "float",
+            "scale": "linear",
+            "min": 0,
+            "max": 1
+        },
+        "lr": {
+            "type": "category",
+            "list": [0.001 0.003 0.0003]
+        }
+    },
+    "job_name": "ps_hp_search/{unique}/eln_{encoder_layer_num}/cs_{codebook_size}/cc_{commitment_cost}/lr_{lr}",
+    "execute" : {
+        "file": "wrapper.py",
+        "function": "wrapper",
+        "kwargs": {
+            "epoch_num": 100
+        }
+    }
+}

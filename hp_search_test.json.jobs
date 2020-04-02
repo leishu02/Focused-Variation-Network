@@ -1,0 +1,12 @@
+ps_hp_search_test/1585666249799/eln_1/dn_GRU python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDIsICJlbmNvZGVyX2xheWVyX251bSI6IDEsICJkZWNvZGVyX25ldHdvcmsiOiAiR1JVIn19 --b64 
+#{"epoch_num": 2, "encoder_layer_num": 1, "decoder_network": "GRU"}
+
+ps_hp_search_test/1585666249802/eln_1/dn_LSTM python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDIsICJlbmNvZGVyX2xheWVyX251bSI6IDEsICJkZWNvZGVyX25ldHdvcmsiOiAiTFNUTSJ9fQ== --b64 
+#{"epoch_num": 2, "encoder_layer_num": 1, "decoder_network": "LSTM"}
+
+ps_hp_search_test/1585666249805/eln_2/dn_LSTM python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDIsICJlbmNvZGVyX2xheWVyX251bSI6IDIsICJkZWNvZGVyX25ldHdvcmsiOiAiTFNUTSJ9fQ== --b64 
+#{"epoch_num": 2, "encoder_layer_num": 2, "decoder_network": "LSTM"}
+
+ps_hp_search_test/1585666249807/eln_2/dn_LSTM python -m ailabs.quicksilver.executor eyJmaWxlIjogIndyYXBwZXIucHkiLCAiZnVuY3Rpb24iOiAid3JhcHBlciIsICJrd2FyZ3MiOiB7ImVwb2NoX251bSI6IDIsICJlbmNvZGVyX2xheWVyX251bSI6IDIsICJkZWNvZGVyX25ldHdvcmsiOiAiTFNUTSJ9fQ== --b64 
+#{"epoch_num": 2, "encoder_layer_num": 2, "decoder_network": "LSTM"}
+

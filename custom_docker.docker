@@ -1,0 +1,22 @@
+#ailabs-ps-gpu
+#latest
+#.
+
+FROM localhost:5000/ailabs_common_ubuntu_18_04_gpu_101:docker-test-2020_3_30_21_28_58
+
+RUN apt-get update -y
+RUN apt-get install -y build-essential zlib1g-dev libssl-dev
+
+RUN apt-get install -y python3 python3-pip python3-setuptools
+
+RUN ln -f /usr/bin/python3 /usr/bin/python
+
+RUN pip3 install --upgrade pip
+
+# If you have a requirements.txt file you can do:
+COPY requirements.txt /
+RUN pip3 install -r /requirements.txt
+RUN pip3 install -i https://yoober8:apeSoocie4eeth1ohZu6gaiCaiW0Shoi@pypi.uberinternal.com/index ailabs_util
+RUN python -c "import nltk; nltk.download('punkt')"
+
+COPY ./ /home/work/
