@@ -8,3 +8,4 @@ data/glove.840B.300d.txt
 .idea
 *.xml
 venv
+log/log*.txt

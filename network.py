@@ -335,7 +335,7 @@ class Attn_RNN_Decoder(torch.nn.Module):
         if self.cfg.decoder_network == 'LSTM':
             self.rnn = torch.nn.LSTM(embed_size + 2*hidden_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
             init_lstm(self.rnn)
-        if self.cfg.decoder_network == 'GRU':
+        else:
             self.rnn = torch.nn.GRU(embed_size + 2*hidden_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
             init_gru(self.rnn)
         self.emb_proj = torch.nn.Linear(hidden_size, embed_size)
