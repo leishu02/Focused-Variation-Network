@@ -1,0 +1,122 @@
+DEBUG:root:network : controlled_VQVAE
+cuda_device : 0
+seed : 0
+spv_proportion : 100
+truncated : False
+domain : personage
+dialog_path : data/dialogue/PersonageNLG/train.json
+test_dialog_path : data/dialogue/PersonageNLG/test.json
+slot_path : data/dialogue/PersonageNLG/slot_value.json
+personality_path : data/dialogue/PersonageNLG/personality.json
+split : [0.9, 0.1]
+python_path : 
+decoder_network : GRU
+various_go : False
+commitment_cost : 0.25
+grad_clip_norm : 1.0
+max_turn : 200
+emb_size : 300
+emb_trainable : True
+hidden_size : 300
+codebook_size : 512
+lr : 0.001
+lr_decay : 1.0
+batch_size : 128
+dropout_rate : 0.0
+epoch_num : 1
+cuda : True
+early_stop_count : 30
+vocab_size : None
+remove_slot_value : True
+encoder_layer_num : 1
+beam_search : True
+beam_size : 10
+beam_len_bonus : 0.5
+teacher_force : 50
+slot_max_ts : 29
+text_max_ts : 62
+personality_size : 5
+act_size : 8
+glove_path : ./data/glove.840B.300d.txt
+model_path : ./models/controlled_VQVAE_personage_GRU_delex_CB512EL1.pkl
+result_path : ./results/controlled_VQVAE_personage_GRU_delex_CB512EL1TMT62_beam10.csv
+vocab_emb : ./vocabs/embedding_personage_delex.npy
+vocab_path : ./vocabs/personage_delex.p
+
+DEBUG:root:Device: 0
+INFO:root:total trainable params: 11036761
+INFO:root:Controlled_VQVAE(
+  (vocab_vq_vae): Vocab_VectorQuantizer(
+    (embedding): Embedding(198, 300)
+  )
+  (vae_encoder): LSTMDynamicEncoder(
+    (embedding): Embedding(198, 300)
+    (lstm): LSTM(300, 300, bidirectional=True)
+  )
+  (encoder): LSTMDynamicEncoder(
+    (embedding): Embedding(198, 300)
+    (lstm): LSTM(300, 300, bidirectional=True)
+  )
+  (act_vq_vae): VectorQuantizer(
+    (_embedding): Embedding(512, 300)
+  )
+  (personality_vq_vae): VectorQuantizer(
+    (_embedding): Embedding(512, 300)
+  )
+  (decoder): Attn_RNN_Decoder(
+    (emb): Embedding(198, 300)
+    (a_attn): Attn(
+      (attn): Linear(in_features=1200, out_features=600, bias=True)
+    )
+    (p_attn): Attn(
+      (attn): Linear(in_features=1200, out_features=600, bias=True)
+    )
+    (rnn): GRU(1500, 600)
+    (emb_proj): Linear(in_features=600, out_features=300, bias=True)
+    (proj): Linear(in_features=300, out_features=198, bias=True)
+  )
+  (act_predictor): MultiLabel_Classification(
+    (linear1): Linear(in_features=300, out_features=150, bias=True)
+    (linear2): Linear(in_features=150, out_features=8, bias=True)
+  )
+  (personality_predictor): MultiClass_Classification(
+    (linear1): Linear(in_features=300, out_features=150, bias=True)
+    (linear2): Linear(in_features=150, out_features=5, bias=True)
+  )
+  (act_mlp): MLP(
+    (linear1): Linear(in_features=600, out_features=1200, bias=True)
+    (linear2): Linear(in_features=1200, out_features=300, bias=True)
+  )
+  (personality_mlp): MLP(
+    (linear1): Linear(in_features=600, out_features=1200, bias=True)
+    (linear2): Linear(in_features=1200, out_features=300, bias=True)
+  )
+  (dec_loss): NLLLoss()
+)
+INFO:root:embedding.  mean: -0.002344  std 0.627239
+DEBUG:root:bucket 1 instance 79879
+DEBUG:root:loss:10.001256942749023 reconloss:5.287420272827148 actloss:0.6940972805023193 personalityloss:1.6091415882110596 actvqloss:0.0009815656812861562 personalityvqloss:0.001013522851280868 grad:0.5493420642894226
+DEBUG:root:loss:9.801209449768066 reconloss:5.07117223739624 actloss:0.6936428546905518 personalityloss:1.6121259927749634 actvqloss:0.004561636131256819 personalityvqloss:0.0034833699464797974 grad:0.7210393828991896
+DEBUG:root:loss:9.454364776611328 reconloss:4.578402996063232 actloss:0.6916043758392334 personalityloss:1.6131941080093384 actvqloss:0.022068798542022705 personalityvqloss:0.006765770725905895 grad:1.2692643874991183
+DEBUG:root:loss:9.96410083770752 reconloss:4.166849613189697 actloss:0.6908050775527954 personalityloss:1.6087799072265625 actvqloss:0.10085560381412506 personalityvqloss:0.02215060405433178 grad:2.42519057099639
+DEBUG:root:loss:10.58021354675293 reconloss:3.9860079288482666 actloss:0.6899247169494629 personalityloss:1.60823655128479 actvqloss:0.41173064708709717 personalityvqloss:0.07463476061820984 grad:1.9987795152487298
+DEBUG:root:loss:11.420750617980957 reconloss:3.8827321529388428 actloss:0.6894080638885498 personalityloss:1.60444974899292 actvqloss:1.3373154401779175 personalityvqloss:0.1910574734210968 grad:1.787979386904377
+DEBUG:root:loss:11.720416069030762 reconloss:3.8520402908325195 actloss:0.6884167194366455 personalityloss:1.5998951196670532 actvqloss:1.6492249965667725 personalityvqloss:0.4989304542541504 grad:1.9495258485107791
+DEBUG:root:loss:11.938345909118652 reconloss:3.8304123878479004 actloss:0.6881808042526245 personalityloss:1.602391004562378 actvqloss:1.4979912042617798 personalityvqloss:1.2112400531768799 grad:1.5608758787612478
+DEBUG:root:loss:12.593246459960938 reconloss:3.808610200881958 actloss:0.687603771686554 personalityloss:1.604587197303772 actvqloss:1.2093195915222168 personalityvqloss:2.374436616897583 grad:1.6288810009924077
+DEBUG:root:loss:13.717949867248535 reconloss:3.7555484771728516 actloss:0.6869523525238037 personalityloss:1.6033055782318115 actvqloss:1.1480443477630615 personalityvqloss:3.7126755714416504 grad:2.3518834732988667
+DEBUG:root:loss:17.21558380126953 reconloss:3.7503647804260254 actloss:0.6850205659866333 personalityloss:1.5977535247802734 actvqloss:1.2791900634765625 personalityvqloss:7.256125450134277 grad:1.8828019888662633
+DEBUG:root:loss:20.940258026123047 reconloss:3.6278553009033203 actloss:0.6840794086456299 personalityloss:1.5973612070083618 actvqloss:1.6645596027374268 personalityvqloss:10.9376859664917 grad:2.6731406141821235
+DEBUG:root:loss:29.686616897583008 reconloss:3.5259602069854736 actloss:0.6834690570831299 personalityloss:1.6024985313415527 actvqloss:1.9557136297225952 personalityvqloss:19.580913543701172 grad:3.177825363392506
+DEBUG:root:loss:31.141643524169922 reconloss:3.6156771183013916 actloss:0.6833025217056274 personalityloss:1.5985561609268188 actvqloss:1.9944496154785156 personalityvqloss:20.982463836669922 grad:4.060410854860485
+DEBUG:root:loss:29.478946685791016 reconloss:3.5781757831573486 actloss:0.6822026968002319 personalityloss:1.6007671356201172 actvqloss:1.7494391202926636 personalityvqloss:19.577322006225586 grad:4.791878241631676
+DEBUG:root:loss:36.095947265625 reconloss:3.626779794692993 actloss:0.6808790564537048 personalityloss:1.6007174253463745 actvqloss:1.9272077083587646 personalityvqloss:25.921085357666016 grad:26.831365956072148
+DEBUG:root:loss:41.30259704589844 reconloss:3.5668976306915283 actloss:0.6800417900085449 personalityloss:1.5924408435821533 actvqloss:2.2718818187713623 personalityvqloss:30.741254806518555 grad:21.13992139297523
+DEBUG:root:loss:41.6810302734375 reconloss:3.58335018157959 actloss:0.6795885562896729 personalityloss:1.5859876871109009 actvqloss:2.7121434211730957 personalityvqloss:30.551259994506836 grad:6.866085061701259
+DEBUG:root:loss:38.488853454589844 reconloss:3.6274707317352295 actloss:0.6801763772964478 personalityloss:1.5828118324279785 actvqloss:2.8560476303100586 personalityvqloss:27.10498809814453 grad:8.994520258169814
+DEBUG:root:loss:45.818389892578125 reconloss:3.4384336471557617 actloss:0.6779865026473999 personalityloss:1.5886417627334595 actvqloss:3.764883041381836 personalityvqloss:33.9505615234375 grad:14.6215218410928
+DEBUG:root:loss:48.010894775390625 reconloss:3.385795831680298 actloss:0.6778742074966431 personalityloss:1.5850460529327393 actvqloss:4.781604290008545 personalityvqloss:35.232173919677734 grad:12.565343038919925
+DEBUG:root:loss:54.039451599121094 reconloss:3.438516616821289 actloss:0.6760506629943848 personalityloss:1.5841357707977295 actvqloss:6.917346000671387 personalityvqloss:38.954315185546875 grad:13.790910241910753
+DEBUG:root:loss:77.37029266357422 reconloss:3.409975528717041 actloss:0.6753345727920532 personalityloss:1.5801992416381836 actvqloss:9.76910400390625 personalityvqloss:56.97673034667969 grad:57.722799148639396
+DEBUG:root:loss:78.4013442993164 reconloss:3.510806083679199 actloss:0.6772456169128418 personalityloss:1.5762600898742676 actvqloss:12.63664722442627 personalityvqloss:57.81173324584961 grad:11.42435091520727
+DEBUG:root:loss:76.5477066040039 reconloss:3.38840913772583 actloss:0.676031231880188 personalityloss:1.5768533945083618 actvqloss:11.933982849121094 personalityvqloss:56.67723083496094 grad:9.993266101370857
