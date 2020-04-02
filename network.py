@@ -463,7 +463,7 @@ class VQVAE(torch.nn.Module):
             if self.cfg.decoder_network == 'LSTM':
                 last_hidden = (sample_quantized.transpose(0, 1), decoder_c.unsqueeze(0))
             else:
-                last_hidden = quantized.transpose(0, 1)
+                last_hidden = sample_quantized.transpose(0, 1)
             act_pred = self.act_predictor(act_quantized, act_idx, mode)
             personality_pred = self.personality_predictor(personality_quantized, personality_idx, mode)
             if mode == 'test':
@@ -743,7 +743,7 @@ class Controlled_VQVAE(torch.nn.Module):
             if self.cfg.decoder_network == 'LSTM':
                 last_hidden = (sample_quantized.transpose(0, 1), decoder_c.unsqueeze(0))
             else:
-                last_hidden = quantized.transpose(0, 1)
+                last_hidden = sample_quantized.transpose(0, 1)
             act_pred = self.act_predictor(act_quantized, act_idx, mode)
             personality_pred = self.personality_predictor(personality_quantized, personality_idx, mode)
             if mode == 'test':
@@ -1011,7 +1011,7 @@ class Focused_VQVAE(torch.nn.Module):
             if self.cfg.decoder_network == 'LSTM':
                 last_hidden = (sample_quantized.transpose(0, 1), decoder_c.unsqueeze(0))
             else:
-                last_hidden = quantized.transpose(0, 1)
+                last_hidden = sample_quantized.transpose(0, 1)
             act_pred = self.act_predictor(act_quantized, act_idx, mode)
             personality_pred = self.personality_predictor(personality_quantized, personality_idx, mode)
             if mode == 'test':
