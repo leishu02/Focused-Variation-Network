@@ -2,6 +2,8 @@
 # coding=utf-8
 import ailabs.tlogger as tlogger  # TODO pycharm warning - No module
 import logging
+import sys
+import model
 
 train_args = ['-domain', 'personage', '-network', 'controlled_VQVAE', '-mode', 'train', '-cfg', 'cuda=True']
 test_args = ['-domain', 'personage', '-network', 'controlled_VQVAE', '-mode', 'test', '-cfg', 'cuda=True']
@@ -33,7 +35,7 @@ def wrapper(
     )
 
     logging.info('Starting wrapper with parameters:')
-    for parameter, value in parameters.items():
+    for parameter, value in locals().items():
         logging.info("  {}: {}".format(parameter, value))
     logging.info("")
 
@@ -46,14 +48,14 @@ def wrapper(
         'epoch_num=' + str(epoch_num),
         'early_stop_count=' + str(early_stop_count),
         'grad_clip_norm=' + str(grad_clip_norm),
-        'emb_trainable=' + emb_trainable,
+        'emb_trainable=' + str(emb_trainable),
         'encoder_layer_num=' + str(encoder_layer_num),
         'codebook_size=' + str(codebook_size),
         'decoder_network=' + decoder_network,
         'teacher_force=' + str(teacher_force),
         'commitment_cost=' + str(commitment_cost),
         'text_max_ts=' + str(text_max_ts),
-        'beam_search=' + beam_search,
+        'beam_search=' + str(beam_search),
     ]
     if beam_search:
         for beam_size in range(5, 30, 5):
@@ -61,7 +63,7 @@ def wrapper(
     else:
         hyperparameters += ['beam_size=10']
 
-    validation_loss = model.main(train_args + hyperparameter)
+    validation_loss = model.main(train_args + hyperparameters)
 
     # logging.info("Running evaluation")
     # model.main(test_args + best_hyperparameters)
