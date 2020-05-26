@@ -295,6 +295,8 @@ class Model:
         person_cfg = Config('personage')
         person_cfg.init_handler('classification')
         person_cfg.remove_slot_value = self.cfg.remove_slot_value
+        person_cfg.cuda = self.cfg.cuda
+        person_cfg.cuda_device = self.cfg.cuda_device
         person_cfg.update()
         self.person_m = get_network(person_cfg, self.reader.vocab)
         path = person_cfg.model_path
