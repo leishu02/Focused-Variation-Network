@@ -593,9 +593,9 @@ def main(sys_args):
         m.load_model()
         m.predict(data = 'test')
 
-    print()
-    print("return from main function:")
-    print(ret)
+
+    logging.info('return from main function:: validation loss:%s' %(str(ret)))
+    print (ret)
 
     return ret
 
