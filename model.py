@@ -15,6 +15,13 @@ import logging
 
 import sys
 
+
+def cal(s):
+    sum = 0
+    for i, v in enumerate(s):
+        sum += pow(2, i) * v
+    return int(sum)
+
 class Model:
     def __init__(self, cfg):
         self.reader = Reader(cfg)
@@ -44,7 +51,19 @@ class Model:
         go_np = pad_sequences(py_batch['go'], 1, padding='post',truncating='post').transpose((1, 0))
         go = cuda_(torch.autograd.Variable(torch.from_numpy(go_np).long()), self.cfg)
         personality_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['personality_idx'])).long()), self.cfg)
+        personality_flatten_idx_np = np.zeros((batch_size, self.cfg.personality_size))
+        for i, v in enumerate(py_batch['personality_idx']):
+            personality_flatten_idx_np[i,v] = 1
+        personality_flatten_idx = cuda_(Variable(torch.from_numpy(np.asarray(personality_flatten_idx_np)).float()), self.cfg)
         act_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['slot_idx'])).float()), self.cfg)
+        act_flatten_idx_list = [ cal(s) for s in py_batch['slot_idx']]
+        act_flatten_idx_np = np.zeros((batch_size, pow(2, self.cfg.act_size)))
+        for i, v in enumerate(act_flatten_idx_list):
+            act_flatten_idx_np[i,v] = 1
+        act_flatten_idx = cuda_(Variable(torch.from_numpy(np.asarray(act_flatten_idx_np)).float()), self.cfg)
+
+        kw_ret['act_flatten_idx'] = act_flatten_idx
+        kw_ret['condition'] = torch.cat([act_flatten_idx, personality_flatten_idx], dim=-1)
 
         kw_ret['slot_np'] = slot_np  # seqlen, batchsize
         kw_ret['slot_value_np'] = slot_value_np  # seqlen, batchsize
@@ -92,7 +111,7 @@ class Model:
             else:
                 x = cuda_(Variable(torch.from_numpy(slot_value_np).long()), self.cfg)#seqlen, batchsize
                 gt_y = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)#seqlen, batchsize
-        elif 'VQVAE' in self.cfg.network:
+        elif 'VQVAE' in self.cfg.network or 'CVAE' in self.cfg.network:
             if self.cfg.remove_slot_value == True:
                 x = cuda_(Variable(torch.from_numpy(slot_np).long()), self.cfg)#seqlen, batchsize
                 gt_y = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)#seqlen, batchsize
@@ -124,6 +143,11 @@ class Model:
         personality_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['personality_idx'])).long()), self.cfg)
         act_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['slot_idx'])).float()), self.cfg)
 
+        act_flatten_idx_np = [ cal(s) for s in py_batch['slot_idx']]
+        act_flatten_idx = cuda_(Variable(torch.from_numpy(np.asarray(act_flatten_idx_np)).long()), self.cfg)
+
+        kw_ret['act_flatten_idx'] = act_flatten_idx
+        kw_ret['condition'] = torch.cat([act_flatten_idx, personality_idx], dim=-1)
         kw_ret['slot_np'] = slot_np  # seqlen, batchsize
         kw_ret['slot_value_np'] = slot_value_np  # seqlen, batchsize
         kw_ret['personality_np'] = personality_np  # seqlen, batchsize
@@ -176,7 +200,7 @@ class Model:
                         personality_encoding.append(np.array([most_personality]))
                 else:
                     if len(ae_set) > 0:
-                        act_encoding.append(np.array([ae.pop()]))
+                        act_encoding.append(np.array([ae_set.pop()]))
                     else:
                         act_encoding.append(np.array([most_act]))
                     personality_encoding.append(np.array([most_personality]))
@@ -201,7 +225,7 @@ class Model:
             else:
                 x = cuda_(Variable(torch.from_numpy(slot_value_np).long()), self.cfg)#seqlen, batchsize
                 gt_y = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)#seqlen, batchsize
-        elif 'VQVAE' in self.cfg.network:
+        elif 'VQVAE' in self.cfg.network or 'CVAE' in self.cfg.network:
             if self.cfg.remove_slot_value == True:
                 x = cuda_(Variable(torch.from_numpy(slot_np).long()), self.cfg)#seqlen, batchsize
                 gt_y = cuda_(Variable(torch.from_numpy(delex_text_np).long()), self.cfg)#seqlen, batchsize
@@ -238,6 +262,9 @@ class Model:
                             = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                     elif self.cfg.network == 'classification':
                         loss = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
+                    elif self.cfg.network == 'controlled_CVAE':
+                        loss, recon_loss, KLD, vocab_vq_loss, act_loss, personality_loss\
+                            = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                     else:
                         loss, network_loss, kld = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
 
@@ -248,9 +275,14 @@ class Model:
                     sup_cnt += 1
                     if 'VQVAE' in self.cfg.network:
                         logging.debug(
-                            'loss:{} reconloss:{} actloss:{} personalityloss:{} actvqloss:{} personalityvqloss:{} grad:{}'.format(
-                                loss.item(), recon_loss.item(), act_loss.item(), personality_loss.item(), act_vq_loss.item(), personality_vq_loss.item(), grad))
-                    elif self.cfg.VAE:
+                            'loss:{} reconloss:{} actloss:{} personalityloss:{} actvqloss:{} personalityvqloss:{} grad:{}'\
+                                .format(loss.item(), recon_loss.item(), act_loss.item(), personality_loss.item(), \
+                                        act_vq_loss.item(), personality_vq_loss.item(), grad))
+                    elif self.cfg.network == 'controlled_CVAE':
+                        logging.debug(
+                            'loss:{} reconloss:{} KLD:{} actloss:{} personalityloss:{} vocabvqloss{} grad:{}'.format(
+                                loss.item(), recon_loss.item(), KLD.item(), act_loss.item(), personality_loss.item(), vocab_vq_loss.item(), grad))
+                    elif self.cfg.VAE or 'simple_CVAE' in self.cfg.network:
                         logging.debug('loss:{} network:{} kld:{} grad:{}'.format(loss.item(), network_loss.item(), kld.item(),grad))
                     else:
                         logging.debug('loss:{} grad:{}'.format(loss.item(), grad))
@@ -429,6 +461,9 @@ class Model:
                         = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)                    
                 elif 'classification' in self.cfg.network:
                     loss = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
+                elif self.cfg.network == 'controlled_CVAE':
+                    loss, recon_loss, KLD, vocab_vq_loss, act_loss, personality_loss \
+                        = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                 else:
                     loss, network_loss, kld = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                 sup_loss += loss.item()
@@ -438,7 +473,12 @@ class Model:
                         'loss:{} reconloss:{} actloss:{} personalityloss:{} actvqloss:{} personalityvqloss:{} '.format(
                             loss.item(), recon_loss.item(), act_loss.item(), personality_loss.item(),
                             act_vq_loss.item(), personality_vq_loss.item()))
-                elif self.cfg.VAE:
+                elif self.cfg.network == 'controlled_CVAE':
+                    logging.debug(
+                        'loss:{} reconloss:{} KLD:{} actloss:{} personalityloss:{} vocabvqloss{}'.format(
+                            loss.item(), recon_loss.item(), KLD.item(), act_loss.item(), personality_loss.item(),
+                            vocab_vq_loss.item()))
+                elif self.cfg.VAE or 'CVAE' in self.cfg.network:
                     logging.debug(
                         'loss:{} network:{} kld:{} '.format(loss.item(), network_loss.item(), kld.item()))
                 else:

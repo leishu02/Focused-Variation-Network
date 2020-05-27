@@ -325,6 +325,27 @@ class RNN_Decoder(torch.nn.Module):
         proba = torch.nn.functional.softmax(gen_score, dim=1)
         return proba, last_hidden, _enc_out
 
+class Condition_RNN_Decoder(torch.nn.Module):
+    def __init__(self, vocab_size, embed_size, hidden_size, condition_size, dropout_rate, vocab, cfg):
+        super(Condition_RNN_Decoder, self).__init__()
+        self.cfg = cfg
+        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.rnn = torch.nn.GRU(embed_size+condition_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
+        init_gru(self.rnn)
+        self.emb_proj = torch.nn.Linear(hidden_size, embed_size)
+        self.proj = torch.nn.Linear(embed_size, vocab_size)
+        self.dropout_rate = dropout_rate
+        self.vocab = vocab
+
+    def forward(self, m_t_input, last_hidden, condition):
+        m_embed = self.emb(m_t_input)
+        _in = m_embed
+        _out, last_hidden = self.rnn(torch.cat((_in, condition), dim=-1), last_hidden)
+        _enc_out = self.emb_proj(_out)
+        gen_score = self.proj(_enc_out).squeeze(0)
+        proba = torch.nn.functional.softmax(gen_score, dim=1)
+        return proba, last_hidden, _enc_out
+
 class Attn_RNN_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size,  dropout_rate, vocab, cfg):
         super(Attn_RNN_Decoder, self).__init__()
@@ -1174,6 +1195,431 @@ class VAE(torch.nn.Module):
         return z, self.decode(z), mu, logvar
 
 
+class CVAE(torch.nn.Module):
+    def __init__(self, cfg, vocab, decay=0, eos_m_token='EOS'):
+        super(CVAE, self).__init__()
+        self.cfg = cfg
+        self.vocab = vocab
+        self.encoder = SimpleDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
+                                          cfg.dropout_rate, cfg)
+
+        self.vae = VAE(cfg.hidden_size + cfg.condition_size, cfg.hidden_size)
+        self.decoder = Condition_RNN_Decoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.condition_size, cfg.dropout_rate, vocab, cfg)
+
+        self.dec_loss = torch.nn.NLLLoss(ignore_index=0, reduction='mean')
+        self.max_ts = cfg.text_max_ts
+        self.beam_search = cfg.beam_search
+        self.teacher_force = cfg.teacher_force
+        if self.beam_search:
+            self.beam_size = cfg.beam_size
+            self.eos_m_token = eos_m_token
+            self.eos_token_idx = self.vocab.encode(eos_m_token)
+
+    def forward(self, x, gt_y, mode, **kwargs):
+        if mode == 'train' or mode == 'valid':
+            loss, recon_loss,  KLD = self.forward_turn(x, gt_y, mode, **kwargs)
+            return loss, recon_loss, KLD
+        elif mode == 'test':
+            pred_y = self.forward_turn(x, gt_y, mode, **kwargs)
+            return pred_y
+
+    def forward_turn(self, x, gt_y, mode, **kwargs):
+        # print ("forward turn")
+        if self.cfg.remove_slot_value == True:
+            x_len = kwargs['slot_len']  # batchsize
+            x_np = kwargs['slot_np']  # seqlen, batchsize
+            y_len = kwargs['delex_text_len']  # batchsize
+            y_np = kwargs['delex_text_np']  # batchsize
+        else:
+            x_len = kwargs['slot_value_len']  # seqlen, batchsize
+            x_np = kwargs['slot_value_np']  # batchsize
+            y_len = kwargs['text_len']  # batchsize
+            y_np = kwargs['text_np']  # seqlen, batchsize
+
+        personality_idx = kwargs['personality_idx']
+        act_idx = kwargs['act_idx']
+        condition = kwargs['condition'].unsqueeze(0)
+
+        batch_size = x.size(1)
+        x_enc_out, h, _ = self.encoder(gt_y, y_len)
+        last_hidden = h[(self.cfg.encoder_layer_num - 1) * 2:-1]
+        z = torch.cat([last_hidden, condition], dim=-1)
+
+        sample_z, decoded_z, mu, logvar = self.vae(z)
+
+        text_tm1 = cuda_(torch.autograd.Variable(torch.ones(1, batch_size).long()), self.cfg)  # GO token
+        text_length = gt_y.size(0)
+        text_dec_proba = []
+        text_dec_outs = []
+        if mode == 'train':
+            last_hidden = sample_z.unsqueeze(0)
+
+            for t in range(text_length):
+                teacher_forcing = toss_(self.teacher_force)
+                proba, last_hidden, dec_out = self.decoder(text_tm1, last_hidden, condition)
+                if teacher_forcing:
+                    text_tm1 = gt_y[t].view(1, -1)
+                else:
+                    _, text_tm1 = torch.topk(proba, 1)
+                    text_tm1 = text_tm1.view(1, -1)
+                text_dec_proba.append(proba)
+                text_dec_outs.append(dec_out)
+            text_dec_proba = torch.stack(text_dec_proba, dim=0)  # [T,B,V]
+            pred_y = text_dec_proba
+            recon_loss = self.dec_loss( \
+                torch.log(pred_y.view(-1, pred_y.size(2))), \
+                gt_y.view(-1))
+            KLD = -0.5 * torch.mean(1 + logvar - mu.pow(2) - logvar.exp())
+            loss = recon_loss + KLD
+            return loss, recon_loss, KLD
+        else:
+            sample_z = torch.randn(sample_z.size()).unsqueeze(0)
+
+            if mode == 'test':
+                if not self.cfg.beam_search:
+                    text_dec_idx = self.greedy_decode(text_tm1, sample_z, condition)
+
+                else:
+                    text_dec_idx = self.beam_search_decode(text_tm1, sample_z, condition)
+
+                return text_dec_idx
+
+    def greedy_decode(self, text_tm1, last_hidden, condition):
+        decoded = []
+        for t in range(self.max_ts):
+            proba, last_hidden, _ = self.decoder(text_tm1, last_hidden, condition)
+            mt_proba, mt_index = torch.topk(proba, 1)  # [B,1]
+            mt_index = mt_index.data.view(-1)
+            decoded.append(mt_index.clone())
+            for i in range(mt_index.size(0)):
+                if mt_index[i] >= len(self.vocab):
+                    mt_index[i] = 2  # unk
+            text_tm1 = cuda_(torch.autograd.Variable(mt_index).view(1, -1), self.cfg)
+        decoded = torch.stack(decoded, dim=0).transpose(0, 1)
+        decoded = list(decoded)
+        return [list(_) for _ in decoded]
+
+    def beam_search_decode_single(self, text_tm1, last_hidden):
+        eos_token_id = self.eos_token_idx
+        batch_size = text_tm1.size(1)
+        if batch_size != 1:
+            raise ValueError('"Beam search single" requires batch size to be 1')
+
+        class BeamState:
+            def __init__(self, score, last_hidden, decoded, length):
+                """
+                Beam state in beam decoding
+                :param score: sum of log-probabilities
+                :param last_hidden: last hidden
+                :param decoded: list of *Variable[1*1]* of all decoded words
+                :param length: current decoded sentence length
+                """
+                self.score = score
+                self.last_hidden = last_hidden
+                self.decoded = decoded
+                self.length = length
+
+            def update_clone(self, score_incre, last_hidden, decoded_t):
+                decoded = copy.copy(self.decoded)
+                decoded.append(decoded_t)
+                clone = BeamState(self.score + score_incre, last_hidden, decoded, self.length + 1)
+                return clone
+
+        def score_bonus(state, decoded):
+            bonus = self.cfg.beam_len_bonus
+            return bonus
+
+        def soft_score_incre(score, turn):
+            return score
+
+        finished, failed = [], []
+        states = []  # sorted by score decreasingly
+        dead_k = 0
+        states.append(BeamState(0, last_hidden, [text_tm1], 0))
+        for t in range(self.max_ts):
+            new_states = []
+            k = 0
+            while k < len(states) and k < self.beam_size - dead_k:
+                state = states[k]
+                last_hidden, text_tm1 = state.last_hidden, state.decoded[-1]
+                proba, last_hidden, _ = self.decoder(text_tm1, last_hidden)
+                proba = torch.log(proba)
+                mt_proba, mt_index = torch.topk(proba, self.beam_size - dead_k)  # [1,K]
+                for new_k in range(self.beam_size - dead_k):
+                    score_incre = soft_score_incre(mt_proba[0][new_k].item(), t) + score_bonus(state,
+                                                                                               mt_index[0][
+                                                                                                   new_k].item())
+                    if len(new_states) >= self.beam_size - dead_k and state.score + score_incre < new_states[-1].score:
+                        break
+                    decoded_t = mt_index[0][new_k]
+                    if decoded_t.item() >= len(self.vocab):
+                        decoded_t.item() == 2  # unk
+                    if decoded_t.item() == self.eos_token_idx:
+                        finished.append(state)
+                    else:
+                        decoded_t = decoded_t.view(1, -1)
+                        new_state = state.update_clone(score_incre, last_hidden, decoded_t)
+                        new_states.append(new_state)
+
+                k += 1
+            if self.beam_size - dead_k < 0:
+                break
+            new_states = new_states[:self.beam_size - dead_k]
+            new_states.sort(key=lambda x: -x.score)
+            states = new_states
+
+            if t == self.max_ts - 1 and not finished:
+                finished = failed
+                print('FAIL')
+                if not finished:
+                    finished.append(states[0])
+
+        finished.sort(key=lambda x: -x.score)
+        decoded_t = finished[0].decoded
+        decoded_t = [_.view(-1).item() for _ in decoded_t]
+        # decoded_sentence = self.vocab.sentence_decode(decoded_t, self.eos_m_token)
+        # print(decoded_sentence)
+        generated = torch.cat(finished[0].decoded, dim=1).data  # [B=1, T]
+        return generated
+
+    def beam_search_decode(self, text_tm1, last_hidden, condition):
+        decoded = []
+        vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(condition, 1, dim=1)
+        for i, (text_tm1_s, last_hidden_s) in enumerate(zip(*vars)):
+                decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s)
+                decoded.append(decoded_s)
+
+        return [list(_.view(-1)) for _ in decoded]
+
+
+class Controlled_CVAE(torch.nn.Module):
+    def __init__(self, cfg, vocab, decay=0, eos_m_token='EOS'):
+        super(Controlled_CVAE, self).__init__()
+        self.cfg = cfg
+        self.vocab = vocab
+        self.vocab_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab))
+        self.encoder = SimpleDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
+                                          cfg.dropout_rate, cfg, self.vocab_vq_vae.embedding)
+
+        self.vae = VAE(cfg.hidden_size + cfg.condition_size, cfg.hidden_size)
+        self.decoder = Condition_RNN_Decoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.condition_size, cfg.dropout_rate, vocab, cfg)
+
+        self.act_predictor = MultiLabel_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.act_size, cfg.dropout_rate)
+        self.personality_predictor = MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.personality_size, cfg.dropout_rate)
+        self.act_mlp = MLP(2*cfg.hidden_size, 4*cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
+        self.personality_mlp = MLP(2*cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
+
+        self.dec_loss = torch.nn.NLLLoss(ignore_index=0, reduction='mean')
+        self.max_ts = cfg.text_max_ts
+        self.beam_search = cfg.beam_search
+        self.teacher_force = cfg.teacher_force
+        if self.beam_search:
+            self.beam_size = cfg.beam_size
+            self.eos_m_token = eos_m_token
+            self.eos_token_idx = self.vocab.encode(eos_m_token)
+
+    def forward(self, x, gt_y, mode, **kwargs):
+        if mode == 'train' or mode == 'valid':
+            loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, quantized_personality_loss = self.forward_turn(x, gt_y, mode, **kwargs)
+            return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, quantized_personality_loss
+        elif mode == 'test':
+            pred_y = self.forward_turn(x, gt_y, mode, **kwargs)
+            return pred_y
+
+    def forward_turn(self, x, gt_y, mode, **kwargs):
+        # print ("forward turn")
+        if self.cfg.remove_slot_value == True:
+            x_len = kwargs['slot_len']  # batchsize
+            x_np = kwargs['slot_np']  # seqlen, batchsize
+            y_len = kwargs['delex_text_len']  # batchsize
+            y_np = kwargs['delex_text_np']  # batchsize
+        else:
+            x_len = kwargs['slot_value_len']  # seqlen, batchsize
+            x_np = kwargs['slot_value_np']  # batchsize
+            y_len = kwargs['text_len']  # batchsize
+            y_np = kwargs['text_np']  # seqlen, batchsize
+
+        personality_idx = kwargs['personality_idx']
+        act_idx = kwargs['act_idx']
+        condition = kwargs['condition'].unsqueeze(0)
+
+        batch_size = x.size(1)
+        x_enc_out, h, _ = self.encoder(gt_y, y_len)
+        last_hidden = h[(self.cfg.encoder_layer_num - 1) * 2:-1]
+        z = torch.cat([last_hidden, condition], dim=-1)
+
+        sample_z, decoded_z, mu, logvar = self.vae(z)
+
+        text_tm1 = cuda_(torch.autograd.Variable(torch.ones(1, batch_size).long()), self.cfg)  # GO token
+        text_length = gt_y.size(0)
+        text_dec_proba = []
+        text_dec_outs = []
+        text_quantized_dec_outs = []
+        text_vq_loss_s = []
+        text_perplexity_s = []
+
+        if mode == 'train':
+            last_hidden = sample_z.unsqueeze(0)
+
+            for t in range(text_length):
+                teacher_forcing = toss_(self.teacher_force)
+                proba, last_hidden, dec_out = self.decoder(text_tm1, last_hidden, condition)
+                if teacher_forcing:
+                    text_tm1 = gt_y[t].view(1, -1)
+                else:
+                    _, text_tm1 = torch.topk(proba, 1)
+                    text_tm1 = text_tm1.view(1, -1)
+                text_dec_proba.append(proba)
+                text_dec_outs.append(dec_out)
+                text_vq_loss, text_quantized, text_perplexity, _ = self.vocab_vq_vae(dec_out)
+                text_vq_loss_s.append(text_vq_loss)
+                text_perplexity_s.append(text_perplexity)
+                text_quantized_dec_outs.append(text_quantized)
+
+
+            text_dec_proba = torch.stack(text_dec_proba, dim=0)  # [T,B,V]
+            pred_y = text_dec_proba
+            recon_loss = self.dec_loss( \
+                torch.log(pred_y.view(-1, pred_y.size(2))), \
+                gt_y.view(-1))
+            KLD = -0.5 * torch.mean(1 + logvar - mu.pow(2) - logvar.exp())
+
+            vocab_vq_loss = torch.mean(torch.stack(text_vq_loss_s, dim=0))
+            vocab_quantized_dec_outs = torch.cat(text_quantized_dec_outs, dim=0)
+
+            # feed text_vq to encoder
+            quantized_enc_out, quantized_h, _ = self.encoder(vocab_quantized_dec_outs, y_len,
+                                                                                is_embedded=True)
+            quantized_z = torch.cat([quantized_h[0], quantized_h[1]], dim=-1)
+
+            quantized_act_z = self.act_mlp(quantized_z)
+            quantized_personality_z = self.personality_mlp(quantized_z)
+            quantized_act_loss = self.act_predictor(quantized_act_z, act_idx, mode)
+            quantized_personality_loss = self.personality_predictor(quantized_personality_z, personality_idx, mode)
+            #
+
+            loss = recon_loss + KLD + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
+            return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, quantized_personality_loss
+        else:
+            sample_z = torch.randn(sample_z.size()).unsqueeze(0)
+
+            if mode == 'test':
+                if not self.cfg.beam_search:
+                    text_dec_idx = self.greedy_decode(text_tm1, sample_z, condition)
+
+                else:
+                    text_dec_idx = self.beam_search_decode(text_tm1, sample_z, condition)
+
+                return text_dec_idx
+
+    def greedy_decode(self, text_tm1, last_hidden, condition):
+        decoded = []
+        for t in range(self.max_ts):
+            proba, last_hidden, _ = self.decoder(text_tm1, last_hidden, condition)
+            mt_proba, mt_index = torch.topk(proba, 1)  # [B,1]
+            mt_index = mt_index.data.view(-1)
+            decoded.append(mt_index.clone())
+            for i in range(mt_index.size(0)):
+                if mt_index[i] >= len(self.vocab):
+                    mt_index[i] = 2  # unk
+            text_tm1 = cuda_(torch.autograd.Variable(mt_index).view(1, -1), self.cfg)
+        decoded = torch.stack(decoded, dim=0).transpose(0, 1)
+        decoded = list(decoded)
+        return [list(_) for _ in decoded]
+
+    def beam_search_decode_single(self, text_tm1, last_hidden):
+        eos_token_id = self.eos_token_idx
+        batch_size = text_tm1.size(1)
+        if batch_size != 1:
+            raise ValueError('"Beam search single" requires batch size to be 1')
+
+        class BeamState:
+            def __init__(self, score, last_hidden, decoded, length):
+                """
+                Beam state in beam decoding
+                :param score: sum of log-probabilities
+                :param last_hidden: last hidden
+                :param decoded: list of *Variable[1*1]* of all decoded words
+                :param length: current decoded sentence length
+                """
+                self.score = score
+                self.last_hidden = last_hidden
+                self.decoded = decoded
+                self.length = length
+
+            def update_clone(self, score_incre, last_hidden, decoded_t):
+                decoded = copy.copy(self.decoded)
+                decoded.append(decoded_t)
+                clone = BeamState(self.score + score_incre, last_hidden, decoded, self.length + 1)
+                return clone
+
+        def score_bonus(state, decoded):
+            bonus = self.cfg.beam_len_bonus
+            return bonus
+
+        def soft_score_incre(score, turn):
+            return score
+
+        finished, failed = [], []
+        states = []  # sorted by score decreasingly
+        dead_k = 0
+        states.append(BeamState(0, last_hidden, [text_tm1], 0))
+        for t in range(self.max_ts):
+            new_states = []
+            k = 0
+            while k < len(states) and k < self.beam_size - dead_k:
+                state = states[k]
+                last_hidden, text_tm1 = state.last_hidden, state.decoded[-1]
+                proba, last_hidden, _ = self.decoder(text_tm1, last_hidden)
+                proba = torch.log(proba)
+                mt_proba, mt_index = torch.topk(proba, self.beam_size - dead_k)  # [1,K]
+                for new_k in range(self.beam_size - dead_k):
+                    score_incre = soft_score_incre(mt_proba[0][new_k].item(), t) + score_bonus(state,
+                                                                                               mt_index[0][
+                                                                                                   new_k].item())
+                    if len(new_states) >= self.beam_size - dead_k and state.score + score_incre < new_states[-1].score:
+                        break
+                    decoded_t = mt_index[0][new_k]
+                    if decoded_t.item() >= len(self.vocab):
+                        decoded_t.item() == 2  # unk
+                    if decoded_t.item() == self.eos_token_idx:
+                        finished.append(state)
+                    else:
+                        decoded_t = decoded_t.view(1, -1)
+                        new_state = state.update_clone(score_incre, last_hidden, decoded_t)
+                        new_states.append(new_state)
+
+                k += 1
+            if self.beam_size - dead_k < 0:
+                break
+            new_states = new_states[:self.beam_size - dead_k]
+            new_states.sort(key=lambda x: -x.score)
+            states = new_states
+
+            if t == self.max_ts - 1 and not finished:
+                finished = failed
+                print('FAIL')
+                if not finished:
+                    finished.append(states[0])
+
+        finished.sort(key=lambda x: -x.score)
+        decoded_t = finished[0].decoded
+        decoded_t = [_.view(-1).item() for _ in decoded_t]
+        # decoded_sentence = self.vocab.sentence_decode(decoded_t, self.eos_m_token)
+        # print(decoded_sentence)
+        generated = torch.cat(finished[0].decoded, dim=1).data  # [B=1, T]
+        return generated
+
+    def beam_search_decode(self, text_tm1, last_hidden, condition):
+        decoded = []
+        vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(condition, 1, dim=1)
+        for i, (text_tm1_s, last_hidden_s) in enumerate(zip(*vars)):
+                decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s)
+                decoded.append(decoded_s)
+
+        return [list(_.view(-1)) for _ in decoded]
+
+
 class Attn(torch.nn.Module):
     def __init__(self, hidden_size):
         super(Attn, self).__init__()
@@ -1204,16 +1650,19 @@ class Attn(torch.nn.Module):
 
 
 class SimpleDynamicEncoder(torch.nn.Module):
-    def __init__(self, vocab_size, embed_size, hidden_size, n_layers, dropout, cfg, bidirectional=True):
+    def __init__(self, vocab_size, embed_size, hidden_size, n_layers, dropout, cfg, emb=None, bidirectional=True):
         super(SimpleDynamicEncoder, self).__init__()
         self.cfg = cfg
         self.bidirectional = bidirectional
         self.hidden_size = hidden_size
-        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
+        if emb:
+            self.embedding = emb
+        else:
+            self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         self.gru = torch.nn.GRU(embed_size, hidden_size, n_layers, dropout=dropout, bidirectional=bidirectional)
         init_gru(self.gru)
 
-    def forward(self, input_seqs, input_lens, hidden=None):
+    def forward(self, input_seqs, input_lens, hidden=None, is_embedded = False,):
         """
         forward procedure. No need for inputs to be sorted
         :param input_seqs: Variable of [T,B]
@@ -1221,7 +1670,10 @@ class SimpleDynamicEncoder(torch.nn.Module):
         :param input_lens: *numpy array* of len for each input sequence
         :return:
         """
-        embedded = self.embedding(input_seqs)
+        if is_embedded:
+            embedded = input_seqs
+        else:
+            embedded = self.embedding(input_seqs)
         embedded = embedded.transpose(0, 1)  # [B,T,E]
         sort_idx = np.argsort(-input_lens)
         unsort_idx = cuda_(torch.LongTensor(np.argsort(sort_idx)), self.cfg)
@@ -1585,3 +2037,8 @@ def get_network(cfg, vocab):
             return Controlled_VQVAE(cfg, vocab)
         elif 'focused' in cfg.network:
             return Focused_VQVAE(cfg, vocab)
+    elif 'CVAE' in cfg.network:
+        if 'simple' in cfg.network:
+            return CVAE(cfg, vocab)
+        elif 'controlled' in cfg.network:
+            return Controlled_CVAE(cfg, vocab)
