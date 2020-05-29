@@ -205,14 +205,14 @@ class Config:
         self.max_turn = 100
         self.emb_size = 300
         self.emb_trainable = True
-        self.hidden_size = 300
+        self.hidden_size = 128
         self.lr = 0.001
         self.lr_decay = 1.0
         self.batch_size = 128
         self.dropout_rate = 0.0
-        self.epoch_num = 100  # triggered by early stop
+        self.epoch_num = 10  # triggered by early stop
         self.cuda = True
-        self.early_stop_count = 30
+        self.early_stop_count = 10
         self.vocab_size = None
         self.remove_slot_value = True
         self.encoder_layer_num = 1
@@ -223,6 +223,7 @@ class Config:
         self.slot_max_ts = 29
         self.text_max_ts = 62
         self.personality_size = 5
+        self.act_size = 8
         self.glove_path = './data/glove.840B.300d.txt'
         
         
@@ -367,8 +368,8 @@ class Config:
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
-        self.model_path += 'EL'+str(self.encoder_layer_num)
-        self.result_path += 'EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
+        self.model_path += '_EL'+str(self.encoder_layer_num)
+        self.result_path += '_EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
@@ -415,8 +416,8 @@ class Config:
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
-        self.model_path += 'EL'+str(self.encoder_layer_num)
-        self.result_path += 'EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
+        self.model_path += '_EL'+str(self.encoder_layer_num)
+        self.result_path += '_EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
@@ -449,7 +450,7 @@ class Config:
         current_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         stderr_handler = logging.StreamHandler()
         file_handler = logging.FileHandler('./log/log_{}.txt'.format(current_time))
-        logging.basicConfig(handlers=[file_handler, stderr_handler])#, stderr_handler
+        logging.basicConfig(handlers=[file_handler])#, stderr_handler
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
 

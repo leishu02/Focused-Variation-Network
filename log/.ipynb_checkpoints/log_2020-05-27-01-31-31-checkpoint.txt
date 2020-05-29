@@ -1,0 +1,46 @@
+DEBUG:root:network : controlled_CVAE
+cuda_device : 2
+seed : 0
+spv_proportion : 100
+truncated : False
+domain : personage
+dialog_path : data/dialogue/PersonageNLG/train.json
+test_dialog_path : data/dialogue/PersonageNLG/test.json
+slot_path : data/dialogue/PersonageNLG/slot_value.json
+personality_path : data/dialogue/PersonageNLG/personality.json
+split : [0.9, 0.1]
+python_path : 
+VAE : False
+various_go : False
+commitment_cost : 1.0
+grad_clip_norm : 1.0
+max_turn : 200
+emb_size : 300
+emb_trainable : True
+hidden_size : 300
+lr : 0.001
+lr_decay : 1.0
+batch_size : 128
+dropout_rate : 0.0
+epoch_num : 1
+cuda : True
+early_stop_count : 30
+vocab_size : None
+remove_slot_value : True
+encoder_layer_num : 1
+beam_search : False
+beam_size : 10
+beam_len_bonus : 0.5
+teacher_force : 50
+slot_max_ts : 29
+text_max_ts : 62
+personality_size : 5
+act_size : 8
+glove_path : ./data/glove.840B.300d.txt
+condition_size : 261
+model_path : ./models/controlled_CVAE_personage_delexEL1.pkl
+result_path : ./results/controlled_CVAE_personage_delexEL1TMT62.csv
+vocab_emb : ./vocabs/embedding_personage_delex.npy
+vocab_path : ./vocabs/personage_delex.p
+
+DEBUG:root:Device: 2

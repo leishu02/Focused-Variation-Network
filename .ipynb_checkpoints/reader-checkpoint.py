@@ -459,7 +459,7 @@ class Reader(_ReaderBase):
             if self.cfg.network == 'classification':
                 idx = np.argmax(pred_y[i])
                 entry['pred_personality'] = self.idx2personality[idx]
-            elif 'seq2seq' in self.cfg.network or 'VQVAE' in self.cfg.network:
+            elif 'seq2seq' in self.cfg.network or 'VQVAE' in self.cfg.network or 'CVAE' in self.cfg.network:
                 word_list = []
                 for t in pred_y[i]:
                     word = self.vocab.decode(t.item())
@@ -487,7 +487,7 @@ class Reader(_ReaderBase):
             results.append(entry)
         write_header = False
         if not self.result_file:
-            self.result_file = open(self.cfg.result_path, 'w')
+            self.result_file = open(self.cfg.result_path, 'w', encoding="utf8")
             self.result_file.write(str(self.cfg))
             write_header = True
 
@@ -513,7 +513,7 @@ class Reader(_ReaderBase):
             logging.info('embedding.  mean: %f  std %f' % (old_avg, old_std))
             return vec_array
         else:
-            ef = open(self.cfg.glove_path, 'r')
+            ef = open(self.cfg.glove_path, 'r', encoding="utf8")
             cnt = 0
             vec_array = initial_embedding_np
             old_avg = np.average(vec_array)
