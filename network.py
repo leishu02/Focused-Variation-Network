@@ -1273,7 +1273,7 @@ class CVAE(torch.nn.Module):
             loss = recon_loss + KLD
             return loss, recon_loss, KLD
         else:
-            sample_z = torch.randn(sample_z.size()).unsqueeze(0)
+            sample_z = torch.randn_like(sample_z).unsqueeze(0)
 
             if mode == 'test':
                 if not self.cfg.beam_search:
@@ -1501,7 +1501,7 @@ class Controlled_CVAE(torch.nn.Module):
             loss = recon_loss + KLD + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
             return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, quantized_personality_loss
         else:
-            sample_z = torch.randn(sample_z.size()).unsqueeze(0)
+            sample_z = torch.randn_like(sample_z).unsqueeze(0)
 
             if mode == 'test':
                 if not self.cfg.beam_search:

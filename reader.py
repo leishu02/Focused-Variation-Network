@@ -459,7 +459,7 @@ class Reader(_ReaderBase):
             if self.cfg.network == 'classification':
                 idx = np.argmax(pred_y[i])
                 entry['pred_personality'] = self.idx2personality[idx]
-            elif 'seq2seq' in self.cfg.network or 'VQVAE' in self.cfg.network:
+            elif 'seq2seq' in self.cfg.network or 'VQVAE' in self.cfg.network or 'CVAE' in self.cfg.network:
                 word_list = []
                 for t in pred_y[i]:
                     word = self.vocab.decode(t.item())

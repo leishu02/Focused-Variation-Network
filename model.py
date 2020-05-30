@@ -141,13 +141,19 @@ class Model:
         go_np = pad_sequences(py_batch['go'], 1, padding='post',truncating='post').transpose((1, 0))
         go = cuda_(torch.autograd.Variable(torch.from_numpy(go_np).long()), self.cfg)
         personality_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['personality_idx'])).long()), self.cfg)
+        personality_flatten_idx_np = np.zeros((batch_size, self.cfg.personality_size))
+        for i, v in enumerate(py_batch['personality_idx']):
+            personality_flatten_idx_np[i,v] = 1
+        personality_flatten_idx = cuda_(Variable(torch.from_numpy(np.asarray(personality_flatten_idx_np)).float()), self.cfg)
         act_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['slot_idx'])).float()), self.cfg)
-
-        act_flatten_idx_np = [ cal(s) for s in py_batch['slot_idx']]
-        act_flatten_idx = cuda_(Variable(torch.from_numpy(np.asarray(act_flatten_idx_np)).long()), self.cfg)
+        act_flatten_idx_list = [ cal(s) for s in py_batch['slot_idx']]
+        act_flatten_idx_np = np.zeros((batch_size, pow(2, self.cfg.act_size)))
+        for i, v in enumerate(act_flatten_idx_list):
+            act_flatten_idx_np[i,v] = 1
+        act_flatten_idx = cuda_(Variable(torch.from_numpy(np.asarray(act_flatten_idx_np)).float()), self.cfg)
 
         kw_ret['act_flatten_idx'] = act_flatten_idx
-        kw_ret['condition'] = torch.cat([act_flatten_idx, personality_idx], dim=-1)
+        kw_ret['condition'] = torch.cat([act_flatten_idx, personality_flatten_idx], dim=-1)
         kw_ret['slot_np'] = slot_np  # seqlen, batchsize
         kw_ret['slot_value_np'] = slot_value_np  # seqlen, batchsize
         kw_ret['personality_np'] = personality_np  # seqlen, batchsize
@@ -430,7 +436,10 @@ class Model:
                         decoded_sentence = self.reader.vocab.sentence_decode(word_list)
                         logging.debug('%s'%(decoded_sentence))
                         batch_gen.append(word_list)
-                        batch_gen_len.append(len(word_list))
+                        if len(word_list) > self.cfg.text_max_ts:
+                            batch_gen_len.append(self.cfg.text_max_ts)
+                        else:
+                            batch_gen_len.append(len(word_list))
                     text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
                     person_x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
                     person_kw_ret = {}
@@ -555,14 +564,17 @@ class Model:
 
     def load_glove_embedding(self):
         initial_arr = self.m.encoder.embedding.weight.data.cpu().numpy()
-        embedding_arr = torch.from_numpy(self.reader.get_glove_matrix(self.reader.vocab, initial_arr))
+        if self.cfg.glove_path == '':
+            embedding_arr =  torch.from_numpy(initial_arr)
+        else:
+            embedding_arr = torch.from_numpy(self.reader.get_glove_matrix(self.reader.vocab, initial_arr))
 
         self.m.encoder.embedding.weight.data.copy_(embedding_arr)
         self.m.encoder.embedding.weight.requires_grad = self.cfg.emb_trainable
         if 'seq2seq' in self.cfg.network:
             self.m.decoder.emb.weight.data.copy_(embedding_arr)
             self.m.decoder.emb.weight.requires_grad = self.cfg.emb_trainable
-        elif 'VQVAE' in self.cfg.network:
+        elif 'VQVAE' or 'CVAE' in self.cfg.network:
             self.m.decoder.emb.weight.data.copy_(embedding_arr)
             self.m.decoder.emb.weight.requires_grad = self.cfg.emb_trainable
 
@@ -635,9 +647,9 @@ def main(sys_args):
         m.load_model()
         m.predict(data = 'test')
 
-    print()
-    print("return from main function:")
-    print(ret)
+
+    logging.info('return from main function:: validation loss:%s' %(str(ret)))
+    print (ret)
 
     return ret
 

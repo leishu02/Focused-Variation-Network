@@ -30,6 +30,8 @@ class Config:
             'simple_VQVAE': self._simple_VQVAE_init,
             'controlled_VQVAE': self._controlled_VQVAE_init,
             'focused_VQVAE': self._focused_VQVAE_init,
+            'simple_CVAE': self._CVAE_init,
+            'controlled_CVAE': self._controlled_CVAE_init,
         }
         init_method[network_type]()
 
@@ -42,6 +44,8 @@ class Config:
             'simple_VQVAE': self._simple_VQVAE_update,
             'controlled_VQVAE': self._controlled_VQVAE_update,
             'focused_VQVAE': self._focused_VQVAE_update,
+            'simple_CVAE': self._CVAE_update,
+            'controlled_CVAE': self._controlled_CVAE_update,
         }
         update_method[self.network]()
 
@@ -86,8 +90,8 @@ class Config:
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
-        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)
-        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
+        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+"CC"+str(self.commitment_cost).replace('.','d')
+        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+"CC"+str(self.commitment_cost).replace('.','d')+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
@@ -201,14 +205,14 @@ class Config:
         self.max_turn = 100
         self.emb_size = 300
         self.emb_trainable = True
-        self.hidden_size = 300
+        self.hidden_size = 128
         self.lr = 0.001
         self.lr_decay = 1.0
         self.batch_size = 128
         self.dropout_rate = 0.0
-        self.epoch_num = 100  # triggered by early stop
+        self.epoch_num = 10  # triggered by early stop
         self.cuda = True
-        self.early_stop_count = 30
+        self.early_stop_count = 10
         self.vocab_size = None
         self.remove_slot_value = True
         self.encoder_layer_num = 1
@@ -219,6 +223,7 @@ class Config:
         self.slot_max_ts = 29
         self.text_max_ts = 62
         self.personality_size = 5
+        self.act_size = 8
         self.glove_path = './data/glove.840B.300d.txt'
         
         
@@ -321,6 +326,104 @@ class Config:
         self.text_max_ts = 62
         self.personality_size = 5
         self.act_size = 8
+
+
+    def _controlled_CVAE_init(self):
+        self.VAE = False
+        self.various_go = False
+        self.commitment_cost = 1.0
+        self.grad_clip_norm = 1.0
+        self.max_turn = 200
+        self.emb_size = 300
+        self.emb_trainable = True
+        self.hidden_size = 300
+        self.lr = 0.001
+        self.lr_decay = 1.0
+        self.batch_size = 128
+        self.dropout_rate = 0.0
+        self.epoch_num = 100  # triggered by early stop
+        self.cuda = True
+        self.early_stop_count = 30
+        self.vocab_size = None
+        self.remove_slot_value = True
+        self.encoder_layer_num = 1
+        self.beam_search = True
+        self.beam_size = 10
+        self.beam_len_bonus = 0.5
+        self.teacher_force = 50
+        self.slot_max_ts = 29
+        self.text_max_ts = 62
+        self.personality_size = 5
+        self.act_size = 8
+        self.glove_path = './data/glove.840B.300d.txt'
+        self.condition_size = pow(2, self.act_size) +self.personality_size
+
+    def _controlled_CVAE_update(self):
+        self.model_path = './models/controlled_CVAE_' + self.domain
+        self.result_path = './results/controlled_CVAE_' + self.domain
+        self.vocab_emb = './vocabs/embedding_' + self.domain
+        self.vocab_path = './vocabs/' + self.domain
+        if self.remove_slot_value:
+            self.model_path += '_delex'
+            self.result_path += '_delex'
+            self.vocab_path += '_delex'
+            self.vocab_emb += '_delex'
+        self.model_path += '_EL'+str(self.encoder_layer_num)
+        self.result_path += '_EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
+        if self.beam_search:
+            self.result_path += '_beam' + str(self.beam_size)
+        self.model_path += '.pkl'
+        self.result_path += '.csv'
+        self.vocab_path += '.p'
+        self.vocab_emb += '.npy'
+
+    def _CVAE_init(self):
+        self.VAE = False
+        self.various_go = False
+        self.grad_clip_norm = 1.0
+        self.max_turn = 200
+        self.emb_size = 300
+        self.emb_trainable = True
+        self.hidden_size = 300
+        self.lr = 0.001
+        self.lr_decay = 1.0
+        self.batch_size = 128
+        self.dropout_rate = 0.0
+        self.epoch_num = 100  # triggered by early stop
+        self.cuda = True
+        self.early_stop_count = 30
+        self.vocab_size = None
+        self.remove_slot_value = True
+        self.encoder_layer_num = 1
+        self.beam_search = True
+        self.beam_size = 10
+        self.beam_len_bonus = 0.5
+        self.teacher_force = 50
+        self.slot_max_ts = 29
+        self.text_max_ts = 62
+        self.personality_size = 5
+        self.act_size = 8
+        self.glove_path = './data/glove.840B.300d.txt'
+        self.condition_size = pow(2, self.act_size) +self.personality_size
+
+    def _CVAE_update(self):
+        self.model_path = './models/CVAE_' + self.domain
+        self.result_path = './results/CVAE_' + self.domain
+        self.vocab_emb = './vocabs/embedding_' + self.domain
+        self.vocab_path = './vocabs/' + self.domain
+        if self.remove_slot_value:
+            self.model_path += '_delex'
+            self.result_path += '_delex'
+            self.vocab_path += '_delex'
+            self.vocab_emb += '_delex'
+        self.model_path += '_EL'+str(self.encoder_layer_num)
+        self.result_path += '_EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
+        if self.beam_search:
+            self.result_path += '_beam' + str(self.beam_size)
+        self.model_path += '.pkl'
+        self.result_path += '.csv'
+        self.vocab_path += '.p'
+        self.vocab_emb += '.npy'
 
     def _classification_update(self):
         self.model_path = './models/classification_'+self.domain
