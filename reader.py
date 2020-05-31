@@ -277,15 +277,15 @@ class Reader(_ReaderBase):
             slot_value = dial['diaact']
             text = [w if 'Variable' in w else w.lower() for w in word_tokenize(dial['text'])]
             delex_text = delexicalize_text(slot_value, text)
-            if remove_slot_value and self.cfg.domain == 'e2e':
+            if remove_slot_value == False and self.cfg.domain == 'e2e':
                 text = shallow_delexicalize_text(slot_value, text)
 
             personality = dial['personality'].lower() if self.cfg.domain=='personage' else None
             if self.cfg.domain == 'e2e':
                 clean = {}
                 for s, v in slot_value.items():
-                    if s in ['name, near']:
-                        clean[s] = 's'+'Variable'
+                    if s in ['name', 'near']:
+                        clean[s] = s+'Variable'
                     else:
                         clean[s] = v
                 slot_value = clean
