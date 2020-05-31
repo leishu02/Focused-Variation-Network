@@ -73,7 +73,7 @@ class Model:
             kw_ret['personality_len'] = personality_len  # batchsize
             kw_ret['personality_idx'] = personality_idx
         else:
-            kw_ret['condition'] = act_flatten_idx
+            kw_ret['condition'] = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['unique'])).float()), self.cfg)
 
         kw_ret['act_flatten_idx'] = act_flatten_idx
         kw_ret['slot_np'] = slot_np  # seqlen, batchsize

@@ -283,10 +283,24 @@ class Reader(_ReaderBase):
                 else:
                     slot_seq += [v.lower()]
                 #slot_seq += ['EOS_'+s]
-
-            k = ' '.join(slot_value.keys())
+            if self.cfg.remove_slot_value:
+                k = ' '.join(slot_value.keys())
+            else:
+                keys = sorted(list(slot_value.keys()))
+                k = ' '.join([k+'_'+slot_value[k] for k in keys])
             if self.cfg.domain == 'personage':
                 k+= ' ' + personality
+            unique = []
+            for key, values in self.slot_values.items():
+                value_size = len(values)
+                add = [0]*value_size
+                if key in slot_value:
+                    idx = values.index(slot_value[key])
+                    add[idx] = 1
+                unique += add
+
+
+
             #if dial_id < 1000:
             tokenized_data[k].append({
                     'id': dial_id,
@@ -299,6 +313,7 @@ class Reader(_ReaderBase):
                     'delex_text_seq': delex_text + ['EOS'],
                     'personality_idx': self.personality2idx[personality] if self.cfg.domain=='personage' else None,
                     'personality': personality if self.cfg.domain=='personage' else None,
+                    'unique': np.array(unique),
             })
             if construct_vocab:
                 for word in slot_seq + slot_value_seq + text + delex_text:
@@ -331,7 +346,8 @@ class Reader(_ReaderBase):
                     'delex_text_seq_len': len(turn['delex_text_seq']),
                     'personality_idx': turn['personality_idx'] if self.cfg.domain=='personage' else None,
                     'personality': turn['personality'] if self.cfg.domain=='personage' else None,
-                    'slot_idx': np.array([1. if s in turn['slot_value'].keys() else 0. for s in self.slot_values.keys()])
+                    'slot_idx': np.array([1. if s in turn['slot_value'].keys() else 0. for s in self.slot_values.keys()]),
+                    'unique': turn['unique'],
                 })
 
                 if len(turn['text_seq']) > max_ts:
@@ -435,9 +451,20 @@ class Reader(_ReaderBase):
             self.vocab.load_vocab(self.cfg.vocab_path)
 
         tokenized_data = self._get_tokenized_data(raw_data, construct_vocab, self.cfg.remove_slot_value)
+        train_unique = set(tokenized_data.keys())
+        print ('train unique', len(train_unique))
         if self.cfg.domain == 'e2e':
             tokenized_dev_data = self._get_tokenized_data(dev_data, construct_vocab, self.cfg.remove_slot_value)
+            dev_unique = set(tokenized_dev_data.keys())
+            print('dev_unique', len(dev_unique))
+            print ('dev train intersection', len(train_unique.intersection(dev_unique)))
         tokenized_test_data = self._get_tokenized_data(test_data, construct_vocab, self.cfg.remove_slot_value)
+        test_unique = tokenized_test_data.keys()
+        print('test_unique', len(test_unique))
+        print('test train intersection', len(train_unique.intersection(dev_unique)))
+
+
+
         
         def findtargetdata(data, p):
             keys = data.keys()
