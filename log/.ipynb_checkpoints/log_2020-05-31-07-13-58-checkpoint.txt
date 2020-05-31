@@ -1,0 +1,114 @@
+DEBUG:root:network : controlled_VQVAE
+cuda_device : 1
+seed : 0
+spv_proportion : 100
+truncated : False
+act_size : 8
+personality_size : 0
+domain : e2e
+dialog_path : data/dialogue/e2e-dataset/train.json
+test_dialog_path : data/dialogue/e2e-dataset/test.json
+dev_dialog_path : data/dialogue/e2e-dataset/test.json
+condition_size : 79
+slot_path : data/dialogue/e2e-dataset/slot_value.json
+slot_max_ts : 21
+text_max_ts : 82
+split : None
+python_path : /home/huxu/anaconda3/envs/p3-torch13/bin/python
+decoder_network : LSTM
+various_go : False
+commitment_cost : 0.95
+grad_clip_norm : 1.0
+max_turn : 200
+emb_size : 300
+emb_trainable : True
+hidden_size : 300
+codebook_size : 2046
+lr : 0.001
+lr_decay : 1.0
+batch_size : 128
+dropout_rate : 0.0
+epoch_num : 1
+cuda : True
+early_stop_count : 30
+vocab_size : None
+remove_slot_value : False
+encoder_layer_num : 3
+beam_search : False
+beam_size : 10
+beam_len_bonus : 0.5
+teacher_force : 50
+glove_path : ./data/glove.840B.300d.txt
+model_path : ./models/controlled_VQVAE_e2e_LSTM_CB2046EL3CC0d95.pkl
+result_path : ./results/controlled_VQVAE_e2e_LSTM_CB2046EL3CC0d95TMT82.csv
+vocab_emb : ./vocabs/embedding_e2e.npy
+vocab_path : ./vocabs/e2e.p
+
+DEBUG:root:Device: 1
+INFO:root:total trainable params: 23589782
+INFO:root:Controlled_VQVAE(
+  (vae_encoder): LSTMDynamicEncoder(
+    (embedding): Embedding(3024, 300)
+    (lstm): LSTM(300, 300, num_layers=3, bidirectional=True)
+  )
+  (vocab_vq_vae): Vocab_VectorQuantizer(
+    (embedding): Embedding(3024, 300)
+  )
+  (encoder): LSTMDynamicEncoder(
+    (embedding): Embedding(3024, 300)
+    (lstm): LSTM(300, 300, num_layers=3, bidirectional=True)
+  )
+  (act_vq_vae): VectorQuantizer(
+    (_embedding): Embedding(2046, 300)
+  )
+  (decoder): Attn_RNN_Decoder(
+    (emb): Embedding(3024, 300)
+    (a_attn): Attn(
+      (attn): Linear(in_features=1200, out_features=600, bias=True)
+    )
+    (p_attn): Attn(
+      (attn): Linear(in_features=1200, out_features=600, bias=True)
+    )
+    (rnn): LSTM(1500, 600)
+    (emb_proj): Linear(in_features=600, out_features=300, bias=True)
+    (proj): Linear(in_features=300, out_features=3024, bias=True)
+  )
+  (act_predictor): MultiLabel_Classification(
+    (linear1): Linear(in_features=300, out_features=150, bias=True)
+    (linear2): Linear(in_features=150, out_features=8, bias=True)
+  )
+  (act_mlp): MLP(
+    (linear1): Linear(in_features=600, out_features=1200, bias=True)
+    (linear2): Linear(in_features=1200, out_features=300, bias=True)
+  )
+  (dec_loss): NLLLoss()
+)
+INFO:root:embedding.  mean: 0.000241  std 0.511211
+DEBUG:root:bucket 1 instance 42061
+DEBUG:root:loss:10.83281421661377 reconloss:8.026914596557617 actloss:0.6914446353912354  actvqloss:0.00301050441339612 grad:0.38101091639591655
+DEBUG:root:loss:10.583503723144531 reconloss:7.966958045959473 actloss:0.6910524964332581  actvqloss:0.009323127567768097 grad:0.44296607316664743
+DEBUG:root:loss:10.196161270141602 reconloss:7.833451747894287 actloss:0.6892679929733276  actvqloss:0.04276130348443985 grad:0.724855194049228
+DEBUG:root:loss:9.419451713562012 reconloss:7.323846817016602 actloss:0.6882607936859131  actvqloss:0.13807806372642517 grad:1.629217630009098
+DEBUG:root:loss:9.23856258392334 reconloss:6.441032886505127 actloss:0.6873705387115479  actvqloss:0.15814974904060364 grad:2.4964256985700035
+DEBUG:root:loss:9.280126571655273 reconloss:5.872946739196777 actloss:0.6860591173171997  actvqloss:0.12368981540203094 grad:2.8645264909071178
+DEBUG:root:loss:8.70531940460205 reconloss:5.529097557067871 actloss:0.6880159378051758  actvqloss:0.09131857752799988 grad:2.568749904626647
+DEBUG:root:loss:8.160627365112305 reconloss:5.399327754974365 actloss:0.6852404475212097  actvqloss:0.06998798251152039 grad:2.307845975743395
+DEBUG:root:loss:7.778519153594971 reconloss:5.222247123718262 actloss:0.6841338872909546  actvqloss:0.06647223234176636 grad:1.8178716129462367
+DEBUG:root:loss:7.3786115646362305 reconloss:5.053973197937012 actloss:0.6836850643157959  actvqloss:0.06906428933143616 grad:1.6568595687142584
+DEBUG:root:loss:7.306118011474609 reconloss:4.911388397216797 actloss:0.6845145225524902  actvqloss:0.07559666037559509 grad:1.356866234090519
+DEBUG:root:loss:6.890415191650391 reconloss:4.978586196899414 actloss:0.6825562715530396  actvqloss:0.08340206742286682 grad:1.9634210014182774
+DEBUG:root:loss:6.760668754577637 reconloss:4.7866129875183105 actloss:0.6816983222961426  actvqloss:0.08299193531274796 grad:1.2894808381831648
+DEBUG:root:loss:6.928618431091309 reconloss:4.784445762634277 actloss:0.6813079118728638  actvqloss:0.07507000863552094 grad:1.426804916360919
+DEBUG:root:loss:6.507662296295166 reconloss:4.750285625457764 actloss:0.6801459789276123  actvqloss:0.07876992970705032 grad:1.155446935072955
+DEBUG:root:loss:6.4074387550354 reconloss:4.715761184692383 actloss:0.6793619394302368  actvqloss:0.09004707634449005 grad:1.079785205889127
+DEBUG:root:loss:6.443059921264648 reconloss:4.63614559173584 actloss:0.6782758235931396  actvqloss:0.10029932856559753 grad:0.7401420400386419
+DEBUG:root:loss:6.317661762237549 reconloss:4.573616027832031 actloss:0.6772460341453552  actvqloss:0.10397850722074509 grad:0.7541333015472635
+DEBUG:root:loss:6.282714366912842 reconloss:4.670393943786621 actloss:0.6755800843238831  actvqloss:0.10412696748971939 grad:1.0915163685367013
+DEBUG:root:loss:6.236538410186768 reconloss:4.626452922821045 actloss:0.6750231981277466  actvqloss:0.10513501614332199 grad:0.6583842300018194
+DEBUG:root:loss:6.310632228851318 reconloss:4.669369697570801 actloss:0.6740858554840088  actvqloss:0.12210133671760559 grad:0.6518980475903102
+DEBUG:root:loss:6.191317081451416 reconloss:4.580477714538574 actloss:0.6732463836669922  actvqloss:0.12659187614917755 grad:0.6060529442359568
+DEBUG:root:loss:6.183905124664307 reconloss:4.573672294616699 actloss:0.6728969216346741  actvqloss:0.15209734439849854 grad:0.7962403208653329
+DEBUG:root:loss:6.146733283996582 reconloss:4.546041965484619 actloss:0.6700085401535034  actvqloss:0.144037663936615 grad:0.618907133983023
+DEBUG:root:loss:6.156838417053223 reconloss:4.529287815093994 actloss:0.667460560798645  actvqloss:0.15928791463375092 grad:0.5697790756492339
+DEBUG:root:loss:6.185537338256836 reconloss:4.570077896118164 actloss:0.6673747301101685  actvqloss:0.20178230106830597 grad:0.756573617203495
+DEBUG:root:loss:5.987969875335693 reconloss:4.380765914916992 actloss:0.6650159955024719  actvqloss:0.2079036831855774 grad:0.811496531975856
