@@ -1325,8 +1325,10 @@ class CVAE(torch.nn.Module):
         batch_size = x.size(1)
         x_enc_out, h, _ = self.encoder(gt_y, y_len)
         last_hidden = h[(self.cfg.encoder_layer_num - 1) * 2:-1]
+        #print ('last_hidden', last_hidden.size())
+        #print ('condition', condition.size())
         z = torch.cat([last_hidden, condition], dim=-1)
-
+        #print ('z', z.size())
         sample_z, decoded_z, mu, logvar = self.vae(z)
 
         text_tm1 = cuda_(torch.autograd.Variable(torch.ones(1, batch_size).long()), self.cfg)  # GO token
@@ -1575,13 +1577,14 @@ class Controlled_CVAE(torch.nn.Module):
             quantized_z = torch.cat([quantized_h[0], quantized_h[1]], dim=-1)
 
             quantized_act_z = self.act_mlp(quantized_z)
-            quantized_act_loss = self.act_predictor(quantized_act_z, act_idx, mode)
             if self.cfg.domain == 'personage':
+                quantized_act_loss = self.act_predictor(quantized_act_z, act_idx, mode)
                 quantized_personality_z = self.personality_mlp(quantized_z)
                 quantized_personality_loss = self.personality_predictor(quantized_personality_z, personality_idx, mode)
                 loss = recon_loss + KLD + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
                 return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, quantized_personality_loss
             else:
+                quantized_act_loss = self.act_predictor(quantized_act_z, condition.squeeze(0), mode)
                 loss = recon_loss + KLD + vocab_vq_loss + quantized_act_loss 
                 return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, None
         else:

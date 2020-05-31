@@ -154,7 +154,7 @@ class VectorQuantizer(torch.nn.Module):
 
 
 class Vocab_VectorQuantizer(torch.nn.Module):
-    def __init__(self, cfg, codebook_size=None):
+    def __init__(self, cfg, codebook_size=None, emb=None):
         super(Vocab_VectorQuantizer, self).__init__()
         self.cfg = cfg
         self.embedding_dim = cfg.hidden_size
@@ -162,9 +162,11 @@ class Vocab_VectorQuantizer(torch.nn.Module):
             self.num_embeddings = codebook_size
         else:
             self.num_embeddings = cfg.codebook_size
-
-        self.embedding = torch.nn.Embedding(self.num_embeddings, self.embedding_dim)
-        self.embedding.weight.data.uniform_(-1 / self.num_embeddings, 1 / self.num_embeddings)
+        if emb is not None:
+            self.embedding = emb
+        else:
+            self.embedding = torch.nn.Embedding(self.num_embeddings, self.embedding_dim)
+            self.embedding.weight.data.uniform_(-1 / self.num_embeddings, 1 / self.num_embeddings)
         self.commitment_cost = cfg.commitment_cost
 
     def forward(self, inputs):
@@ -632,10 +634,11 @@ class Controlled_VQVAE(torch.nn.Module):
         super(Controlled_VQVAE, self).__init__()
         self.cfg = cfg
         self.vocab = vocab
-        self.vocab_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab))
-        self.vae_encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num, cfg.dropout_rate, cfg, self.vocab_vq_vae.embedding)
+
+        self.vae_encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num, cfg.dropout_rate, cfg)
+        self.vocab_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), self.vae_encoder.embedding)
         self.encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
-                                          cfg.dropout_rate, cfg, self.vocab_vq_vae.embedding)
+                                          cfg.dropout_rate, cfg)
         #self.personality_attn = Attn(self.cfg.hidden_size)
         #self.slot_attn = Attn(self.cfg.hidden_size)
         if decay > 0.0:
@@ -1322,8 +1325,10 @@ class CVAE(torch.nn.Module):
         batch_size = x.size(1)
         x_enc_out, h, _ = self.encoder(gt_y, y_len)
         last_hidden = h[(self.cfg.encoder_layer_num - 1) * 2:-1]
+        #print ('last_hidden', last_hidden.size())
+        #print ('condition', condition.size())
         z = torch.cat([last_hidden, condition], dim=-1)
-
+        #print ('z', z.size())
         sample_z, decoded_z, mu, logvar = self.vae(z)
 
         text_tm1 = cuda_(torch.autograd.Variable(torch.ones(1, batch_size).long()), self.cfg)  # GO token
@@ -1476,14 +1481,14 @@ class Controlled_CVAE(torch.nn.Module):
         super(Controlled_CVAE, self).__init__()
         self.cfg = cfg
         self.vocab = vocab
-        self.vocab_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab))
-        self.encoder = SimpleDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
-                                          cfg.dropout_rate, cfg, self.vocab_vq_vae.embedding)
 
+        self.encoder = SimpleDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
+                                          cfg.dropout_rate, cfg)
+        self.vocab_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), self.encoder.embedding)
         self.vae = VAE(cfg.hidden_size + cfg.condition_size, cfg.hidden_size)
         self.decoder = Condition_RNN_Decoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.condition_size, cfg.dropout_rate, vocab, cfg)
 
-        self.act_predictor = MultiLabel_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.act_size, cfg.dropout_rate)
+        self.act_predictor = MultiLabel_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.condition_size, cfg.dropout_rate)
         self.personality_predictor = MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.personality_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
         self.act_mlp = MLP(2*cfg.hidden_size, 4*cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
         self.personality_mlp = MLP(2*cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
@@ -1572,13 +1577,14 @@ class Controlled_CVAE(torch.nn.Module):
             quantized_z = torch.cat([quantized_h[0], quantized_h[1]], dim=-1)
 
             quantized_act_z = self.act_mlp(quantized_z)
-            quantized_act_loss = self.act_predictor(quantized_act_z, act_idx, mode)
             if self.cfg.domain == 'personage':
+                quantized_act_loss = self.act_predictor(quantized_act_z, act_idx, mode)
                 quantized_personality_z = self.personality_mlp(quantized_z)
                 quantized_personality_loss = self.personality_predictor(quantized_personality_z, personality_idx, mode)
                 loss = recon_loss + KLD + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
                 return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, quantized_personality_loss
             else:
+                quantized_act_loss = self.act_predictor(quantized_act_z, condition.squeeze(0), mode)
                 loss = recon_loss + KLD + vocab_vq_loss + quantized_act_loss 
                 return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, None
         else:

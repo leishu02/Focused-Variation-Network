@@ -390,7 +390,6 @@ class Config:
         self.teacher_force = 50
         self.act_size = 8
         self.glove_path = './data/glove.840B.300d.txt'
-        self.condition_size = pow(2, self.act_size) +self.personality_size
 
     def _CVAE_update(self):
         self.model_path = './models/CVAE_' + self.domain

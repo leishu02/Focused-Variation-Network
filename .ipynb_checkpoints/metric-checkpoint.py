@@ -35,15 +35,16 @@ class Evaluator:
 
     def run_metrics(self):
         data = self.read_result_data()
-        personality_labels = ['agreeable', 'disagreeable', 'conscientiousness', 'unconscientiousness', 'extravert']
-        full_report = self.classification(data, personality_labels)
-        for idx, l in enumerate(personality_labels):
-            self.metric_dict[l + '_precision'] = full_report[0][idx]
-            self.metric_dict[l + '_recall'] = full_report[1][idx]
-            self.metric_dict[l + '_fscore'] = full_report[2][idx]
-        self.metric_dict['macro_precision'] = np.mean(full_report[0])
-        self.metric_dict['macro_recall'] = np.mean(full_report[1])
-        self.metric_dict['macro_fscore'] = np.mean(full_report[2])
+        if self.cfg.domain == 'personage':
+            personality_labels = ['agreeable', 'disagreeable', 'conscientiousness', 'unconscientiousness', 'extravert']
+            full_report = self.classification(data, personality_labels)
+            for idx, l in enumerate(personality_labels):
+                self.metric_dict[l + '_precision'] = full_report[0][idx]
+                self.metric_dict[l + '_recall'] = full_report[1][idx]
+                self.metric_dict[l + '_fscore'] = full_report[2][idx]
+            self.metric_dict['macro_precision'] = np.mean(full_report[0])
+            self.metric_dict['macro_recall'] = np.mean(full_report[1])
+            self.metric_dict['macro_fscore'] = np.mean(full_report[2])
         if self.cfg.network == "classification":
             self.dump()
             return self.metric_dict['macro_fscore']

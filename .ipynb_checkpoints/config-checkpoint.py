@@ -11,13 +11,28 @@ class Config:
         self.seed = 0
         self.spv_proportion = 100
         self.truncated = False
+        self.act_size = 8
+        self.personality_size = 0
 
         self.domain = domain
         fd = domain_config.domain_path[domain]['fd']
         self.dialog_path = fd+domain_config.domain_path[domain]['Lei_dialog_path']
         self.test_dialog_path =fd+domain_config.domain_path[domain]['Lei_test_dialog_path']
+        if self.domain == 'e2e':
+            self.dev_dialog_path = fd+domain_config.domain_path[domain]['Lei_test_dialog_path']
+            self.condition_size = 79
         self.slot_path = fd+domain_config.domain_path[domain]['slot_path']
-        self.personality_path = fd+domain_config.domain_path[domain]['personality_path']
+        if self.domain == 'personage':
+            self.personality_size = 5
+            self.condition_size = pow(2, self.act_size) + self.personality_size
+            self.personality_path = fd+domain_config.domain_path[domain]['personality_path']
+            self.personality_size = 5
+            self.slot_max_ts = 29
+            self.text_max_ts = 62
+        elif self.domain == 'e2e':
+            self.slot_max_ts = 21
+            self.text_max_ts = 82
+
         self.split = domain_config.domain_path[domain]['split']
         self.python_path = ''
 
@@ -74,10 +89,6 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.slot_max_ts = 29
-        self.text_max_ts = 62
-        self.personality_size = 5
-        self.act_size = 8
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _controlled_VQVAE_update(self):
@@ -123,10 +134,6 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.slot_max_ts = 29
-        self.text_max_ts = 62
-        self.personality_size = 5
-        self.act_size = 8
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _focused_VQVAE_update(self):
@@ -173,10 +180,6 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.slot_max_ts = 29
-        self.text_max_ts = 62
-        self.personality_size = 5
-        self.act_size = 8
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _simple_VQVAE_update(self):
@@ -220,10 +223,6 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.slot_max_ts = 29
-        self.text_max_ts = 62
-        self.personality_size = 5
-        self.act_size = 8
         self.glove_path = './data/glove.840B.300d.txt'
         
         
@@ -272,9 +271,6 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.slot_max_ts = 29
-        self.text_max_ts = 62
-        self.personality_size = 5
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _copy_seq2seq_update(self):
@@ -322,10 +318,6 @@ class Config:
         self.input_size = 62
         self.output_size = 5 #total 5 personality
         self.glove_path = './data/glove.840B.300d.txt'
-        self.slot_max_ts = 29
-        self.text_max_ts = 62
-        self.personality_size = 5
-        self.act_size = 8
 
 
     def _controlled_CVAE_init(self):
@@ -351,12 +343,9 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.slot_max_ts = 29
-        self.text_max_ts = 62
-        self.personality_size = 5
         self.act_size = 8
         self.glove_path = './data/glove.840B.300d.txt'
-        self.condition_size = pow(2, self.act_size) +self.personality_size
+
 
     def _controlled_CVAE_update(self):
         self.model_path = './models/controlled_CVAE_' + self.domain
@@ -399,12 +388,8 @@ class Config:
         self.beam_size = 10
         self.beam_len_bonus = 0.5
         self.teacher_force = 50
-        self.slot_max_ts = 29
-        self.text_max_ts = 62
-        self.personality_size = 5
         self.act_size = 8
         self.glove_path = './data/glove.840B.300d.txt'
-        self.condition_size = pow(2, self.act_size) +self.personality_size
 
     def _CVAE_update(self):
         self.model_path = './models/CVAE_' + self.domain
