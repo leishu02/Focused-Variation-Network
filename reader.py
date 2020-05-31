@@ -325,7 +325,7 @@ class Reader(_ReaderBase):
                 else:
                     add[-1] = 1
                 unique += add
-                value_unique[key] = np.array(add)
+                value_unique[key] = np.array(add.index(1))
                 #print (key, len(add))
             #print (len(unique))
 
