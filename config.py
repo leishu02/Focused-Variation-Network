@@ -215,7 +215,7 @@ class Config:
         self.dropout_rate = 0.0
         self.epoch_num = 10  # triggered by early stop
         self.cuda = True
-        self.early_stop_count = 10
+        self.early_stop_count = 30
         self.vocab_size = None
         self.remove_slot_value = True
         self.encoder_layer_num = 1
