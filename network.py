@@ -421,7 +421,7 @@ class VQVAE(torch.nn.Module):
             return act_encoding, personality_encoding
         elif mode == 'test':
             pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
-            return pred_y#, act_pred, personality_pred
+            return pred_y, act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
         #print ("forward turn")
@@ -667,7 +667,7 @@ class Controlled_VQVAE(torch.nn.Module):
             return act_encoding, personality_encoding
         elif mode == 'test':
             pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
-            return pred_y #, act_pred, personality_pred
+            return pred_y , act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
         if self.cfg.remove_slot_value == True:
@@ -780,7 +780,7 @@ class Controlled_VQVAE(torch.nn.Module):
                 return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
             else:
                 loss = recon_loss + act_loss + act_vq_loss \
-                       + vocab_vq_loss + quantized_act_loss   # + personality_KLdiv + slot_KLdiv
+                       + vocab_vq_loss + quantized_act_loss  
                 return loss, recon_loss, act_loss, None, act_vq_loss, None
 
         else:
@@ -983,7 +983,7 @@ class Focused_VQVAE(torch.nn.Module):
             return act_encoding, personality_encoding
         elif mode == 'test':
             pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
-            return pred_y#, act_pred, personality_pred
+            return pred_y, act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
         if self.cfg.remove_slot_value == True:

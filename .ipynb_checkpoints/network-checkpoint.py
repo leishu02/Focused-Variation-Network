@@ -421,7 +421,7 @@ class VQVAE(torch.nn.Module):
             return act_encoding, personality_encoding
         elif mode == 'test':
             pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
-            return pred_y#, act_pred, personality_pred
+            return pred_y, act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
         #print ("forward turn")
@@ -489,9 +489,9 @@ class VQVAE(torch.nn.Module):
                 return loss, recon_loss, act_loss, None , act_vq_loss, None
         else:
             act_sample_idx = kwargs['act_sample_idx']
-            personality_sample_idx = kwargs['personality_sample_idx']
             act_sample_emb = self.act_vq_vae._embedding(act_sample_idx)
             if self.cfg.domain == 'personage':
+                personality_sample_idx = kwargs['personality_sample_idx']
                 personality_sample_emb = self.personality_vq_vae._embedding(personality_sample_idx)
                 sample_quantized = torch.cat([act_sample_emb, personality_sample_emb], dim=-1)
             else:
@@ -667,7 +667,7 @@ class Controlled_VQVAE(torch.nn.Module):
             return act_encoding, personality_encoding
         elif mode == 'test':
             pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
-            return pred_y #, act_pred, personality_pred
+            return pred_y , act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
         if self.cfg.remove_slot_value == True:
@@ -779,8 +779,8 @@ class Controlled_VQVAE(torch.nn.Module):
                    + vocab_vq_loss + quantized_act_loss + quantized_personality_loss #+ personality_KLdiv + slot_KLdiv
                 return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
             else:
-                loss = recon_loss + act_loss + personality_loss + act_vq_loss \
-                       + vocab_vq_loss + quantized_act_loss   # + personality_KLdiv + slot_KLdiv
+                loss = recon_loss + act_loss + act_vq_loss \
+                       + vocab_vq_loss + quantized_act_loss  
                 return loss, recon_loss, act_loss, None, act_vq_loss, None
 
         else:
@@ -806,7 +806,7 @@ class Controlled_VQVAE(torch.nn.Module):
                 else:
                     text_dec_idx = self.beam_search_decode(text_tm1,  last_hidden, slot_enc_out, personality_enc_out)
 
-                return text_dec_idx , act_pred, personality_pred self.cfg.domain == 'personage' else None
+                return text_dec_idx , act_pred, personality_pred if self.cfg.domain == 'personage' else None
 
     def greedy_decode(self, text_tm1,  last_hidden, slot_enc_out, personality_enc_out):
         decoded = []
@@ -908,18 +908,33 @@ class Controlled_VQVAE(torch.nn.Module):
     def beam_search_decode(self, text_tm1, last_hidden, slot_enc_out, personality_enc_out):
         decoded = []
         if self.cfg.decoder_network == 'LSTM':
-            vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden[0], 1, dim=1), torch.split(last_hidden[1], 1, dim=1), \
-                    torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1) if self.cfg.domain == 'personage' else None
-            for i, (text_tm1_s, last_hidden_h_s, last_hidden_c_s, slot_enc_out_s, personality_enc_out_s) \
-                    in enumerate(zip(*vars)):
-                decoded_s = self.beam_search_decode_single(text_tm1_s, (last_hidden_h_s, last_hidden_c_s), slot_enc_out_s, personality_enc_out_s)
-                decoded.append(decoded_s)
+            if self.cfg.domain == 'personage':
+                vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden[0], 1, dim=1), torch.split(last_hidden[1], 1, dim=1), \
+                        torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1)
+                for i, (text_tm1_s, last_hidden_h_s, last_hidden_c_s, slot_enc_out_s, personality_enc_out_s) \
+                        in enumerate(zip(*vars)):
+                    decoded_s = self.beam_search_decode_single(text_tm1_s, (last_hidden_h_s, last_hidden_c_s), slot_enc_out_s, personality_enc_out_s)
+                    decoded.append(decoded_s)
+            else:
+                vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden[0], 1, dim=1), torch.split(last_hidden[1], 1, dim=1), \
+                        torch.split(slot_enc_out, 1, dim=1)
+                for i, (text_tm1_s, last_hidden_h_s, last_hidden_c_s, slot_enc_out_s) \
+                        in enumerate(zip(*vars)):
+                    decoded_s = self.beam_search_decode_single(text_tm1_s, (last_hidden_h_s, last_hidden_c_s), slot_enc_out_s, None)
+                    decoded.append(decoded_s)
         else:
-            vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1) if self.cfg.domain == 'personage' else None
-            for i, (text_tm1_s, last_hidden_s, slot_enc_out_s, personality_enc_out_s) \
-                    in enumerate(zip(*vars)):
-                decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s, slot_enc_out_s, personality_enc_out_s)
-                decoded.append(decoded_s)
+            if self.cfg.domain == 'personage':
+                vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1)
+                for i, (text_tm1_s, last_hidden_s, slot_enc_out_s, personality_enc_out_s) \
+                        in enumerate(zip(*vars)):
+                    decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s, slot_enc_out_s, personality_enc_out_s)
+                    decoded.append(decoded_s)
+            else:
+                vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(slot_enc_out, 1, dim=1),
+                for i, (text_tm1_s, last_hidden_s, slot_enc_out_s) \
+                        in enumerate(zip(*vars)):
+                    decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s, slot_enc_out_s, None)
+                    decoded.append(decoded_s)
 
         return [list(_.view(-1)) for _ in decoded]
 
@@ -968,7 +983,7 @@ class Focused_VQVAE(torch.nn.Module):
             return act_encoding, personality_encoding
         elif mode == 'test':
             pred_y, act_pred, personality_pred = self.forward_turn(x, gt_y, mode, **kwargs)
-            return pred_y#, act_pred, personality_pred
+            return pred_y, act_pred, personality_pred
 
     def forward_turn(self, x, gt_y, mode, **kwargs):
         if self.cfg.remove_slot_value == True:

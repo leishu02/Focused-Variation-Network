@@ -178,8 +178,12 @@ class Evaluator:
         for dial_id in dials:
             dial = dials[dial_id]
             for turn_num, turn in enumerate(dial):
-                gt_y = json.loads(turn['delex_text_tokens'])
-                pred_y = json.loads(turn['pred_delex_text_tokens'])
+                if self.cfg.remove_slot_value:
+                    gt_y = json.loads(turn['delex_text_tokens'])
+                    pred_y = json.loads(turn['pred_delex_text_tokens'])
+                else:
+                    gt_y = json.loads(turn['text_tokens'])
+                    pred_y = json.loads(turn['pred_text_tokens'])
                 gt_sentences.append(gt_y)
                 pred_sentences.append(pred_y)
                 

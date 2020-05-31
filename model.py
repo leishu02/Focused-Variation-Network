@@ -385,7 +385,7 @@ class Model:
         self.person_m.load_state_dict(all_state['lstd'])
 
     def predict(self, data = 'test'):
-        if self.cfg.network != 'classification':
+        if self.cfg.network != 'classification' and self.cfg.domain == 'personage':
             self.personality_predictor()
             self.person_m.eval()
         if 'VQVAE' in self.cfg.network:
@@ -433,12 +433,12 @@ class Model:
         #ev = self.EV(self.cfg)
         #res = ev.run_metrics()
         self.m.train()
-        if self.cfg.network != 'classification':
+        if self.cfg.network != 'classification' and self.cfg.domain == 'personage':
             self.person_m.train()
         return None
 
     def eval(self, data='test'):
-        if self.cfg.network != 'classification':
+        if self.cfg.network != 'classification' and self.cfg.domain == 'personage':
             self.personality_predictor()
             self.person_m.eval()
         if 'VQVAE' in self.cfg.network:
@@ -492,7 +492,7 @@ class Model:
         ev = self.EV(self.cfg)
         res = ev.run_metrics()
         self.m.train()
-        if self.cfg.network != 'classification':
+        if self.cfg.network != 'classification' and self.cfg.domain == 'personage':
             self.person_m.train()
         return res
     
