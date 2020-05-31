@@ -20,7 +20,7 @@ class Config:
         self.test_dialog_path =fd+domain_config.domain_path[domain]['Lei_test_dialog_path']
         if self.domain == 'e2e':
             self.dev_dialog_path = fd+domain_config.domain_path[domain]['Lei_test_dialog_path']
-            self.condition_size = 79
+            self.condition_size = 42
         self.slot_path = fd+domain_config.domain_path[domain]['slot_path']
         if self.domain == 'personage':
             self.personality_size = 5
@@ -32,6 +32,17 @@ class Config:
         elif self.domain == 'e2e':
             self.slot_max_ts = 21
             self.text_max_ts = 82
+            self.slot_value_size = {
+                'name': 1,
+                'eatType': 4,
+                'priceRange': 7,
+                'customer rating': 7,
+                'near': 1,
+                'food': 8,
+                'area': 3,
+                'familyFriendly': 3,
+            }
+            self.key_order = ['area', 'customer rating', 'eatType', 'familyFriendly', 'food', 'name', 'near', 'priceRange']
 
         self.split = domain_config.domain_path[domain]['split']
         self.python_path = ''

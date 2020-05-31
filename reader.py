@@ -201,6 +201,14 @@ class Reader(_ReaderBase):
 
     def _get_tokenized_data(self, raw_data, construct_vocab, remove_slot_value):
 
+        def shallow_delexicalize_text(slot_value, text):
+            text_str = ' '.join(text)
+            for slot, value in slot_value.items():
+                if slot in ['name', 'near'] and (value.lower() in text_str):
+                        text_str = text_str.replace(value.lower(), slot+'Variable')
+
+            return text_str.split(' ')
+
         def delexicalize_text(slot_value, text):
             mapping = {
                 'priceRange':{
@@ -268,8 +276,20 @@ class Reader(_ReaderBase):
         for dial_id, dial in enumerate(raw_data):
             slot_value = dial['diaact']
             text = [w if 'Variable' in w else w.lower() for w in word_tokenize(dial['text'])]
-            delex_text =delexicalize_text(slot_value, text)
+            delex_text = delexicalize_text(slot_value, text)
+            if remove_slot_value and self.cfg.domain == 'e2e':
+                text = shallow_delexicalize_text(slot_value, text)
+
             personality = dial['personality'].lower() if self.cfg.domain=='personage' else None
+            if self.cfg.domain == 'e2e':
+                clean = {}
+                for s, v in slot_value.items():
+                    if s in ['name, near']:
+                        clean[s] = 's'+'Variable'
+                    else:
+                        clean[s] = v
+                slot_value = clean
+
             slot_value_seq = []
             for s, v in slot_value.items():
                 slot_value_seq += self.slot2phrase[s]
@@ -291,18 +311,28 @@ class Reader(_ReaderBase):
             if self.cfg.domain == 'personage':
                 k+= ' ' + personality
             unique = []
-            for key, values in self.slot_values.items():
-                value_size = len(values)
-                add = [0]*value_size
+            value_unique = {}
+            for key in self.cfg.key_order:
+                values = self.slot_values[key]
+                value_size = self.cfg.slot_value_size[key]
+                add = [0]*(value_size+1)
                 if key in slot_value:
-                    idx = values.index(slot_value[key])
-                    add[idx] = 1
+                    if key in ['name', 'near']:
+                        add[0] = 1
+                    else:
+                        idx = values.index(slot_value[key])
+                        add[idx] = 1
+                else:
+                    add[-1] = 1
                 unique += add
+                value_unique[key] = np.array(add)
+                #print (key, len(add))
+            #print (len(unique))
 
 
 
             #if dial_id < 1000:
-            tokenized_data[k].append({
+            tokenized_data[k].append({**{
                     'id': dial_id,
                     'slot_value':slot_value,
                     'slot_value_size':len(slot_value),
@@ -314,7 +344,7 @@ class Reader(_ReaderBase):
                     'personality_idx': self.personality2idx[personality] if self.cfg.domain=='personage' else None,
                     'personality': personality if self.cfg.domain=='personage' else None,
                     'unique': np.array(unique),
-            })
+            }, **value_unique})
             if construct_vocab:
                 for word in slot_seq + slot_value_seq + text + delex_text:
                     self.vocab.add_item(word)
@@ -329,7 +359,8 @@ class Reader(_ReaderBase):
         for ap, dial in tokenized_data.items():
             encoded_dial = []
             for turn_id, turn in enumerate(dial):
-                encoded_dial.append({
+                value_unique = {k:turn[k] for k in self.cfg.key_order}
+                encoded_dial.append({**{
                     'id': turn['id'],
                     'go': self.vocab.sentence_encode(['<go'+str(turn_id)+'>']),
                     'slot_value': turn['slot_value'],
@@ -348,7 +379,7 @@ class Reader(_ReaderBase):
                     'personality': turn['personality'] if self.cfg.domain=='personage' else None,
                     'slot_idx': np.array([1. if s in turn['slot_value'].keys() else 0. for s in self.slot_values.keys()]),
                     'unique': turn['unique'],
-                })
+                }, **value_unique})
 
                 if len(turn['text_seq']) > max_ts:
                     max_ts = len(turn['text_seq'])
