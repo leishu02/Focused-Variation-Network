@@ -395,8 +395,10 @@ class Reader(_ReaderBase):
                     print (k, p, len(data[k]))
                     return k
         if self.cfg.mode == 'predict':
-            k = findtargetdata(tokenized_test_data, 'extravert')
             predict_tokenized_test_data = {}
+            p = list(self.personality2idx.keys())[0]
+            print ('personality: ', p)
+            k = findtargetdata(tokenized_test_data, p)
             predict_tokenized_test_data[k] = tokenized_test_data[k]
                         
 

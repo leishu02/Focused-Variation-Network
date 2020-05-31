@@ -180,24 +180,36 @@ class Model:
                 act_encoding+=sample.tolist()
             for i in py_batch['personality_idx']:
                 dist = personality_idx_dict[str(i)]
-                sample = np.random.choice(self.cfg.codebook_size, 1000, p=dist)
+                sample = np.random.choice(self.cfg.codebook_size, 100000, p=dist)
                 personality_encoding+=sample.tolist()
             
             ae_count = np.bincount(np.asarray(act_encoding))
             ae_set = set(act_encoding)
             print (ae_set)
             most_act = np.argmax(ae_count)
-            ae_set = list(ae_set - set([most_act]))
-            print (ae_set)
+            #ae_set = list(ae_set - set([most_act]))
+            #print (ae_set)
             pe_count = np.bincount(np.asarray(personality_encoding))
             pe_set = set(personality_encoding)
-            print (pe_set)
+            print ('pe_set', pe_set)
             most_personality = np.argmax(pe_count)
-            pe_set = list(pe_set - set([most_personality]))
-            print (pe_set)
+            #pe_set = list(pe_set - set([most_personality]))
+            #print (pe_set)
+            unique, counts = np.unique(np.asarray(personality_encoding), return_counts=True)
+            if len(unique) >= 10:
+                unique = unique[:10]
+            print ('unique', len(unique), {u:counts[i] for i, u in enumerate(unique)}) 
+            pe_set = list(unique)
             act_encoding = []
             personality_encoding = []
+            chunk = int(batch_size/len(unique))
             for i in range(batch_size):
+                pe_idx = int(i/chunk)
+                if pe_idx >= len(pe_set):
+                    pe_idx = len(pe_set)-1
+                act_encoding.append(np.array([most_act]))
+                personality_encoding.append(np.array([pe_set[pe_idx]]))
+                '''
                 if i < batch_size/2:
                     act_encoding.append(np.array([most_act]))
                     if len(pe_set) > 0:
@@ -210,9 +222,9 @@ class Model:
                     else:
                         act_encoding.append(np.array([most_act]))
                     personality_encoding.append(np.array([most_personality]))
-                    
+                '''   
             print (len(act_encoding), len(personality_encoding))
-            print (act_encoding, personality_encoding)
+            print (personality_encoding)
                 
             
             kw_ret['act_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(act_encoding))).long(), self.cfg)
@@ -378,11 +390,12 @@ class Model:
                             word_list += [self.reader.vocab.encode('EOS')]
                         batch_gen.append(word_list)
                         batch_gen_len.append(len(word_list))
-                    text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
-                    person_x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
-                    person_kw_ret = {}
-                    person_kw_ret['delex_text_len'] = np.asarray(batch_gen_len)
-                    person_pred = self.person_m(x=person_x, gt_y=None, mode='test', **person_kw_ret)
+                        print(' '.join([self.reader.vocab.decode(w) for w in word_list]))
+                    #text_np = pad_sequences(batch_gen, self.cfg.text_max_ts, padding='post', truncating='post').transpose((1, 0))
+                    #person_x = cuda_(Variable(torch.from_numpy(text_np).long()), self.cfg)
+                    #person_kw_ret = {}
+                    #person_kw_ret['delex_text_len'] = np.asarray(batch_gen_len)
+                    #person_pred = self.person_m(x=person_x, gt_y=None, mode='test', **person_kw_ret)
                     #self.reader.wrap_result(turn_batch, pred_y, person_pred)
                 else:
                     pass
