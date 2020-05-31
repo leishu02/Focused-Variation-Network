@@ -202,20 +202,64 @@ class Reader(_ReaderBase):
     def _get_tokenized_data(self, raw_data, construct_vocab, remove_slot_value):
 
         def delexicalize_text(slot_value, text):
+            mapping = {
+                'priceRange':{
+                    'high':['expensive', 'the upper', 'moderately', 'upscale', 'costs a lot','more pricey', 'good value', 'above average', 'average', 'larger', 'cost more more', 'pricey', 'good prices', 'luxuriou'  ],
+                    'moderate':[],
+                    'more than £30':[],
+                    'less than £20':[],
+                    '£20-25':['average', '£20 - £25'],
+                    'cheap':[],
+                },
+                'customer rating':{
+                    'high':[],
+                    'average':[],
+                    'low':[],
+                    '5 out of 5':[],
+                    '3 out of 5':['3 star',],
+                    '1 out of 5':['one star', '1 star', 'low']
+
+                }
+            }
             text_str = ' '.join(text)
             for slot, value in slot_value.items():
-                if (slot == 'priceRange') and (value.lower() in text_str):
-                    if value.lower() not in text:
-                        for t in text:
-                            if value.lower() in t:
-                                text_str = text_str.replace(t, slot + 'Variable')
+                if (slot == 'priceRange'):
+                    if (value.lower() in text_str):
+                        if value.lower() not in text:
+                            for t in text:
+                                if value.lower() in t:
+                                    text_str = text_str.replace(t, slot + 'Variable')
+                        else:
+                            text_str = text_str.replace(value.lower(), slot + 'Variable')
                     else:
-                        text_str = text_str.replace(value.lower(), slot + 'Variable')
+                        #if value.lower() == 'high':
+                            #print(value.lower(), text_str, slot_value)
+                        for c in mapping['priceRange'][value.lower()]:
+                            if c in text_str:
+                                text_str = text_str.replace(c, slot + 'Variable')
+
+                if (slot == 'customer rating'):
+                    if (value.lower() in text_str):
+                        if value.lower() not in text:
+                            for t in text:
+                                if value.lower() in t:
+                                    text_str = text_str.replace(t, slot + 'Variable')
+                        else:
+                            text_str = text_str.replace(value.lower(), slot + 'Variable')
+                    else:
+                        for c in mapping['customer rating'][value.lower()]:
+                            if c in text_str:
+                                text_str = text_str.replace(c, slot + 'Variable')
+
                 if (slot != 'familyFriendly') and (value.lower() in text_str):
                     text_str = text_str.replace(value.lower(), slot+'Variable')
                 if (slot == 'familyFriendly'):
-                    for neg in ['n\'t ', 'not ', '']:
-                        for ff in ['kid friendly', 'family friendly' ]:
+                    for neg in ['n\'t ', 'not ', '', 'non']:
+                        for ff in ['kid friendly', 'family friendly',
+                                   'child friendly', 'child-friendly',
+                                   'family-friendly', 'children-friendly',
+                                   'for the whole family', 'allow kids', 'adults only',
+                                   'child-unfriendly',]:
                             if neg+ff in text_str:
                                 text_str = text_str.replace(neg+ff, slot+'Variable')
             return text_str.split(' ')
@@ -225,7 +269,7 @@ class Reader(_ReaderBase):
             slot_value = dial['diaact']
             text = [w if 'Variable' in w else w.lower() for w in word_tokenize(dial['text'])]
             delex_text =delexicalize_text(slot_value, text)
-            personality = dial['personality'].lower()
+            personality = dial['personality'].lower() if self.cfg.domain=='personage' else None
             slot_value_seq = []
             for s, v in slot_value.items():
                 slot_value_seq += self.slot2phrase[s]
@@ -239,7 +283,10 @@ class Reader(_ReaderBase):
                 else:
                     slot_seq += [v.lower()]
                 #slot_seq += ['EOS_'+s]
-            k = ' '.join(slot_value.keys()) + ' ' + personality
+
+            k = ' '.join(slot_value.keys())
+            if self.cfg.domain == 'personage':
+                k+= ' ' + personality
             #if dial_id < 1000:
             tokenized_data[k].append({
                     'id': dial_id,
@@ -250,8 +297,8 @@ class Reader(_ReaderBase):
                     'personality_seq': [personality, 'EOS_P'],
                     'text_seq': text + ['EOS'],
                     'delex_text_seq': delex_text + ['EOS'],
-                    'personality_idx': self.personality2idx[personality],
-                    'personality': personality,
+                    'personality_idx': self.personality2idx[personality] if self.cfg.domain=='personage' else None,
+                    'personality': personality if self.cfg.domain=='personage' else None,
             })
             if construct_vocab:
                 for word in slot_seq + slot_value_seq + text + delex_text:
@@ -276,14 +323,14 @@ class Reader(_ReaderBase):
                     'slot_seq_len': len(turn['slot_seq']),
                     'slot_value_seq': self.vocab.sentence_encode(turn['slot_value_seq']),
                     'slot_value_seq_len': len(turn['slot_value_seq']),
-                    'personality_seq': self.vocab.sentence_encode(turn['personality_seq']),
-                    'personality_seq_len': len(turn['personality_seq']),
+                    'personality_seq': self.vocab.sentence_encode(turn['personality_seq']) if self.cfg.domain=='personage' else None,
+                    'personality_seq_len': len(turn['personality_seq']) if self.cfg.domain=='personage' else None,
                     'text_seq': self.vocab.sentence_encode(turn['text_seq']),
                     'text_seq_len': len(turn['text_seq']),
                     'delex_text_seq': self.vocab.sentence_encode(turn['delex_text_seq']),
                     'delex_text_seq_len': len(turn['delex_text_seq']),
-                    'personality_idx': turn['personality_idx'],
-                    'personality': turn['personality'],
+                    'personality_idx': turn['personality_idx'] if self.cfg.domain=='personage' else None,
+                    'personality': turn['personality'] if self.cfg.domain=='personage' else None,
                     'slot_idx': np.array([1. if s in turn['slot_value'].keys() else 0. for s in self.slot_values.keys()])
                 })
 
@@ -353,15 +400,18 @@ class Reader(_ReaderBase):
         """
         raw_data = json.load(open(self.cfg.dialog_path, 'rb'))
         test_data = json.load(open(self.cfg.test_dialog_path, 'rb'))
+        if self.cfg.domain=='e2e':
+            dev_data = json.load(open(self.cfg.dev_dialog_path, 'rb'))
+
         self.slot_value_info = json.load(open(self.cfg.slot_path, 'rb'))
         self.slot_values = self.slot_value_info['slot_value']
         self.numslot_value = self.slot_value_info['numslot_value']
         self.slot_cardinality = len(self.slot_values.keys())
-
-        self.personality = json.load(open(self.cfg.personality_path, 'rb'))
-        self.personality2idx = {v.lower():i for i, v in enumerate(self.personality)}
-        self.idx2personality = {v: k for k, v in self.personality2idx.items()}
-        self.slot2phrase = {'name': ['name'], 'food': ['food'], 'customerRating': ['customer', 'rating'],
+        if self.cfg.domain == 'personage':
+            self.personality = json.load(open(self.cfg.personality_path, 'rb'))
+            self.personality2idx = {v.lower():i for i, v in enumerate(self.personality)}
+            self.idx2personality = {v: k for k, v in self.personality2idx.items()}
+        self.slot2phrase = {'name': ['name'], 'food': ['food'], 'customerRating': ['customer', 'rating'], 'customer rating': ['customer', 'rating'],
                             'priceRange': ['price', 'range'], 'area': ['area'], 'eatType': ['eat', 'type'],
                             'familyFriendly': ['family', 'friendly'], 'near': ['near'],
                             }
@@ -369,8 +419,9 @@ class Reader(_ReaderBase):
         if not os.path.isfile(self.cfg.vocab_path):
             construct_vocab = True
             print('Constructing vocab file...')
-            for w in self.personality2idx.keys():
-                self.vocab.add_item(w)
+            if self.cfg.domain == 'personage':
+                for w in self.personality2idx.keys():
+                    self.vocab.add_item(w)
             for w in self.slot_values.keys():
                 self.vocab.add_item(w+'Variable')
                 self.vocab.add_item('EOS_'+w)
@@ -383,7 +434,9 @@ class Reader(_ReaderBase):
         else:
             self.vocab.load_vocab(self.cfg.vocab_path)
 
-        tokenized_data = self._get_tokenized_data(raw_data, construct_vocab, self.cfg.remove_slot_value)         
+        tokenized_data = self._get_tokenized_data(raw_data, construct_vocab, self.cfg.remove_slot_value)
+        if self.cfg.domain == 'e2e':
+            tokenized_dev_data = self._get_tokenized_data(dev_data, construct_vocab, self.cfg.remove_slot_value)
         tokenized_test_data = self._get_tokenized_data(test_data, construct_vocab, self.cfg.remove_slot_value)
         
         def findtargetdata(data, p):
@@ -394,7 +447,7 @@ class Reader(_ReaderBase):
                 if l == max_len and p in k:
                     print (k, p, len(data[k]))
                     return k
-        if self.cfg.mode == 'predict':
+        if self.cfg.mode == 'predict' and self.cfg.domain == 'personage':
             k = findtargetdata(tokenized_test_data, 'extravert')
             predict_tokenized_test_data = {}
             predict_tokenized_test_data[k] = tokenized_test_data[k]
@@ -412,12 +465,25 @@ class Reader(_ReaderBase):
             self.vocab.load_vocab(self.cfg.vocab_path)
 
         encoded_data = self._get_encoded_data(tokenized_data)
+        if self.cfg.domain == 'e2e':
+            encoded_dev_data = self._get_encoded_data(tokenized_dev_data)
         if self.cfg.mode == 'predict':
             encoded_test_data = self._get_encoded_data(predict_tokenized_test_data)
         else:
             encoded_test_data = self._get_encoded_data(tokenized_test_data)
+        if self.cfg.split:
+            self.train, self.dev, _ = self._split_data(encoded_data, self.cfg.split)
+        else:
+            train = []
+            for ap_key, dials in encoded_data.items():
+                train += [[d] for d in dials]
+            self.train = train
 
-        self.train, self.dev, _ = self._split_data(encoded_data, self.cfg.split)
+            dev = []
+            for ap_key, dials in encoded_dev_data.items():
+                dev += [[d] for d in dials]
+            self.dev = dev
+
         test = []
         for ap_key, dials in encoded_test_data.items():
             test += [[d] for d in dials]

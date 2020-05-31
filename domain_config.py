@@ -12,13 +12,25 @@ domain_path = {'multiwoz':{
 
 'personage':{#act to text generation
 'fd':'data/dialogue/PersonageNLG/',
-'fn':'stylistic-variation-nlg-corpus.csv',
+'train_fn':'stylistic-variation-nlg-corpus.csv',
 'test_fn':'personage-nlg-test.csv',
 'Lei_dialog_path':'train.json',
 'Lei_test_dialog_path':'test.json',
 'slot_path':'slot_value.json',
 'personality_path':'personality.json',
 'split': [0.9, 0.1],
+},
+
+'e2e':{#act to text generation
+'fd':'data/dialogue/e2e-dataset/',
+'train_fn':'trainset.csv',
+'test_fn':'testset_w_refs.csv',
+'dev_fn':'devset.csv',
+'Lei_dialog_path':'train.json',
+'Lei_test_dialog_path':'test.json',
+'Lei_dev_dialog_path':'dev.json',
+'slot_path':'slot_value.json',
+'split':None,
 },
 
 'fb':{
