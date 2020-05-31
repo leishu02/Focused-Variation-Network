@@ -486,7 +486,7 @@ class VQVAE(torch.nn.Module):
                 return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
             else:
                 loss = recon_loss + act_loss + act_vq_loss
-                return loss, recon_loss, act_loss, 0. , act_vq_loss, 0.
+                return loss, recon_loss, act_loss, None , act_vq_loss, None
         else:
             act_sample_idx = kwargs['act_sample_idx']
             personality_sample_idx = kwargs['personality_sample_idx']
@@ -721,7 +721,7 @@ class Controlled_VQVAE(torch.nn.Module):
         #
         '''
         if mode == 'getDist':
-            return act_encoding, personality_encoding
+            return act_encoding, personality_encoding if self.cfg.domain == 'personage' else None
         
         elif mode == 'train':
             if self.cfg.decoder_network == 'LSTM':
@@ -729,8 +729,9 @@ class Controlled_VQVAE(torch.nn.Module):
             else:
                 last_hidden = quantized.unsqueeze(0)
             act_loss = self.act_predictor(act_quantized, act_idx, mode)
-            personality_loss = self.personality_predictor(personality_quantized, personality_idx, mode) if self.cfg.domain == 'personage' else 0.0
-            ##prepare dist from encoding           
+            personality_loss = self.personality_predictor(personality_quantized, personality_idx, mode) if self.cfg.domain == 'personage' else None
+            ##prepare dist from encoding        
+
             '''
             personality_encoding_dist = getDist(personality_idx, personality_encoding)
             slot_encoding_dist = getDist(act_idx, act_encoding)
@@ -908,13 +909,13 @@ class Controlled_VQVAE(torch.nn.Module):
         decoded = []
         if self.cfg.decoder_network == 'LSTM':
             vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden[0], 1, dim=1), torch.split(last_hidden[1], 1, dim=1), \
-                    torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1)
+                    torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1) if self.cfg.domain == 'personage' else None
             for i, (text_tm1_s, last_hidden_h_s, last_hidden_c_s, slot_enc_out_s, personality_enc_out_s) \
                     in enumerate(zip(*vars)):
                 decoded_s = self.beam_search_decode_single(text_tm1_s, (last_hidden_h_s, last_hidden_c_s), slot_enc_out_s, personality_enc_out_s)
                 decoded.append(decoded_s)
         else:
-            vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1)
+            vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1) if self.cfg.domain == 'personage' else None
             for i, (text_tm1_s, last_hidden_s, slot_enc_out_s, personality_enc_out_s) \
                     in enumerate(zip(*vars)):
                 decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s, slot_enc_out_s, personality_enc_out_s)
@@ -934,17 +935,17 @@ class Focused_VQVAE(torch.nn.Module):
                                           cfg.dropout_rate, cfg)
         if decay > 0.0:
             self.act_vq_vae = VectorQuantizerEMA(cfg, decay)
-            self.personality_vq_vae = VectorQuantizerEMA(cfg, decay)
+            self.personality_vq_vae = VectorQuantizerEMA(cfg, decay) if self.cfg.domain == 'personage' else None
         else:
             self.act_vq_vae = VectorQuantizer(cfg)
-            self.personality_vq_vae = VectorQuantizer(cfg)
+            self.personality_vq_vae = VectorQuantizer(cfg) if self.cfg.domain == 'personage' else None
         self.decoder = Attn_RNN_Decoder(len(vocab), cfg.emb_size, 2 * cfg.hidden_size, cfg.dropout_rate, vocab, cfg)
         self.act_predictor = MultiLabel_Classification(cfg.hidden_size, int(cfg.hidden_size / 2), cfg.act_size,
                                                        cfg.dropout_rate)
         self.personality_predictor = MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size / 2),
-                                                               cfg.personality_size, cfg.dropout_rate)
+                                                               cfg.personality_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
         self.act_mlp = MLP(2*cfg.hidden_size, 4*cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
-        self.personality_mlp = MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
+        self.personality_mlp = MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
 
         
         self.dec_loss = torch.nn.NLLLoss(ignore_index=0, reduction='mean')
@@ -980,10 +981,10 @@ class Focused_VQVAE(torch.nn.Module):
             x_np = kwargs['slot_value_np']  # batchsize
             y_len = kwargs['text_len']  # batchsize
             y_np = kwargs['text_np']  # seqlen, batchsize
-
-        personality_idx = kwargs['personality_idx']
-        personality_seq = kwargs['personality_seq']
-        personality_len = kwargs['personality_len']
+        if self.cfg.domain == 'personage':
+            personality_idx = kwargs['personality_idx']
+            personality_seq = kwargs['personality_seq']
+            personality_len = kwargs['personality_len']
         act_idx = kwargs['act_idx']
 
         batch_size = x.size(1)
@@ -991,9 +992,10 @@ class Focused_VQVAE(torch.nn.Module):
         z = torch.cat([h[0], h[1]], dim=-1)
         act_z = self.act_mlp(z)
         act_vq_loss, act_quantized, act_perplexity, act_encoding = self.act_vq_vae(act_z)
-        personality_z = self.personality_mlp(z)
-        personality_vq_loss, personality_quantized, personality_perplexity, personality_encoding = self.personality_vq_vae(
-            personality_z)
+        if self.cfg.domain == 'personage':
+            personality_z = self.personality_mlp(z)
+            personality_vq_loss, personality_quantized, personality_perplexity, personality_encoding = self.personality_vq_vae(
+                personality_z)
         text_tm1 = cuda_(torch.autograd.Variable(torch.ones(1, batch_size).long()), self.cfg)  # GO token
         text_length = gt_y.size(0)
         text_dec_proba = []
@@ -1003,10 +1005,15 @@ class Focused_VQVAE(torch.nn.Module):
         text_perplexity_s = []
 
         # act and personality distribution act_encoding (B, codebook_size)
-        personality_enc_out, personality_hidden, personality_emb = self.encoder(personality_seq, personality_len,
-                                                                                enc_out='cat')
-        slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, personality_hidden, enc_out='cat')
-        quantized = torch.cat([act_quantized, personality_quantized], dim=-1)
+        if self.cfg.domain == 'personage':
+            personality_enc_out, personality_hidden, personality_emb = self.encoder(personality_seq, personality_len,
+                                                                                    enc_out='cat')
+            slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, personality_hidden, enc_out='cat')
+            quantized = torch.cat([act_quantized, personality_quantized], dim=-1)
+        else:
+            personality_enc_out = None
+            slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, enc_out='cat')
+            quantized = torch.cat([act_quantized, act_quantized], dim=-1)
         # decoder_c = cuda_(torch.autograd.Variable(torch.zeros(quantized.size())), self.cfg)
         decoder_c = torch.cat([slot_hidden[1][0], slot_hidden[1][1]], dim=-1)
         '''
@@ -1017,7 +1024,7 @@ class Focused_VQVAE(torch.nn.Module):
         #
         '''
         if mode == 'getDist':
-            return act_encoding, personality_encoding
+            return act_encoding, personality_encoding if self.cfg.domain == 'personage' else None
 
         elif mode == 'train':
             if self.cfg.decoder_network == 'LSTM':
@@ -1025,7 +1032,7 @@ class Focused_VQVAE(torch.nn.Module):
             else:
                 last_hidden = quantized.unsqueeze(0)
             act_loss = self.act_predictor(act_quantized, act_idx, mode)
-            personality_loss = self.personality_predictor(personality_quantized, personality_idx, mode)
+            personality_loss = self.personality_predictor(personality_quantized, personality_idx, mode) if self.cfg.domain == 'personage' else None
             ##prepare dist from encoding
             '''
             personality_encoding_dist = getDist(personality_idx, personality_encoding)
@@ -1051,21 +1058,28 @@ class Focused_VQVAE(torch.nn.Module):
             recon_loss = self.dec_loss( \
                 torch.log(pred_y.view(-1, pred_y.size(2))), \
                 gt_y.view(-1))
-
-            loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss
-            return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
+            if self.cfg.domain == 'personage':
+                loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss
+                return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
+            else:
+                loss = recon_loss + act_loss + act_vq_loss 
+                return loss, recon_loss, act_loss, None, act_vq_loss, None
         else:
             act_sample_idx = kwargs['act_sample_idx']
-            personality_sample_idx = kwargs['personality_sample_idx']
             act_sample_emb = self.act_vq_vae._embedding(act_sample_idx)
-            personality_sample_emb = self.personality_vq_vae._embedding(personality_sample_idx)
-            sample_quantized = torch.cat([act_sample_emb, personality_sample_emb], dim=-1)
+            if self.cfg.domain == 'personage':
+                personality_sample_idx = kwargs['personality_sample_idx']
+                personality_sample_emb = self.personality_vq_vae._embedding(personality_sample_idx)
+                sample_quantized = torch.cat([act_sample_emb, personality_sample_emb], dim=-1)
+            else:
+                sample_quantized = torch.cat([act_sample_emb, act_sample_emb], dim=-1)
             if self.cfg.decoder_network == 'LSTM':
                 last_hidden = (sample_quantized.transpose(0, 1), decoder_c.unsqueeze(0))
             else:
                 last_hidden = sample_quantized.transpose(0, 1)
             act_pred = self.act_predictor(act_quantized, act_idx, mode)
-            personality_pred = self.personality_predictor(personality_quantized, personality_idx, mode)
+            if self.cfg.domain == 'personage':
+                personality_pred = self.personality_predictor(personality_quantized, personality_idx, mode)
             if mode == 'test':
                 if not self.cfg.beam_search:
                     text_dec_idx = self.greedy_decode(text_tm1, last_hidden, slot_enc_out, personality_enc_out)
@@ -1073,7 +1087,7 @@ class Focused_VQVAE(torch.nn.Module):
                 else:
                     text_dec_idx = self.beam_search_decode(text_tm1, last_hidden, slot_enc_out, personality_enc_out)
 
-                return text_dec_idx, act_pred, personality_pred
+                return text_dec_idx, act_pred, personality_pred  if self.cfg.domain == 'personage' else None
 
     def greedy_decode(self, text_tm1, last_hidden, slot_enc_out, personality_enc_out):
         decoded = []
@@ -1176,23 +1190,42 @@ class Focused_VQVAE(torch.nn.Module):
     def beam_search_decode(self, text_tm1, last_hidden, slot_enc_out, personality_enc_out):
         decoded = []
         if self.cfg.decoder_network == 'LSTM':
-            vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden[0], 1, dim=1), torch.split(last_hidden[1],
-                                                                                                       1, dim=1), \
-                   torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1)
-            for i, (text_tm1_s, last_hidden_h_s, last_hidden_c_s, slot_enc_out_s, personality_enc_out_s) \
-                    in enumerate(zip(*vars)):
-                decoded_s = self.beam_search_decode_single(text_tm1_s, (last_hidden_h_s, last_hidden_c_s),
-                                                           slot_enc_out_s, personality_enc_out_s)
-                decoded.append(decoded_s)
+            if self.cfg.domain == 'personage':
+                vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden[0], 1, dim=1), torch.split(last_hidden[1],
+                                                                                                           1, dim=1), \
+                       torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1)
+                for i, (text_tm1_s, last_hidden_h_s, last_hidden_c_s, slot_enc_out_s, personality_enc_out_s) \
+                        in enumerate(zip(*vars)):
+                    decoded_s = self.beam_search_decode_single(text_tm1_s, (last_hidden_h_s, last_hidden_c_s),
+                                                               slot_enc_out_s, personality_enc_out_s)
+                    decoded.append(decoded_s)
+            else:
+                vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden[0], 1, dim=1), torch.split(last_hidden[1],
+                                                                                                           1, dim=1), \
+                       torch.split(slot_enc_out, 1, dim=1)
+                for i, (text_tm1_s, last_hidden_h_s, last_hidden_c_s, slot_enc_out_s) \
+                        in enumerate(zip(*vars)):
+                    decoded_s = self.beam_search_decode_single(text_tm1_s, (last_hidden_h_s, last_hidden_c_s),
+                                                               slot_enc_out_s, None)
+                    decoded.append(decoded_s)
         else:
-            vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(slot_enc_out, 1,
-                                                                                                    dim=1), torch.split(
-                personality_enc_out, 1, dim=1)
-            for i, (text_tm1_s, last_hidden_s, slot_enc_out_s, personality_enc_out_s) \
-                    in enumerate(zip(*vars)):
-                decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s, slot_enc_out_s,
-                                                           personality_enc_out_s)
-                decoded.append(decoded_s)
+            if self.cfg.domain == 'personage':
+                vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(slot_enc_out, 1,
+                                                                                                        dim=1), torch.split(
+                    personality_enc_out, 1, dim=1)
+                for i, (text_tm1_s, last_hidden_s, slot_enc_out_s, personality_enc_out_s) \
+                        in enumerate(zip(*vars)):
+                    decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s, slot_enc_out_s,
+                                                               personality_enc_out_s)
+                    decoded.append(decoded_s)
+            else:
+                vars = torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1), torch.split(slot_enc_out, 1,
+                                                                                                        dim=1)
+                for i, (text_tm1_s, last_hidden_s, slot_enc_out_s) \
+                        in enumerate(zip(*vars)):
+                    decoded_s = self.beam_search_decode_single(text_tm1_s, last_hidden_s, slot_enc_out_s,
+                                                               None)
+                    decoded.append(decoded_s)
 
         return [list(_.view(-1)) for _ in decoded]
     
@@ -1266,8 +1299,8 @@ class CVAE(torch.nn.Module):
             x_np = kwargs['slot_value_np']  # batchsize
             y_len = kwargs['text_len']  # batchsize
             y_np = kwargs['text_np']  # seqlen, batchsize
-
-        personality_idx = kwargs['personality_idx']
+        
+        personality_idx = kwargs['personality_idx'] if self.cfg.domain == 'personage' else None
         act_idx = kwargs['act_idx']
         condition = kwargs['condition'].unsqueeze(0)
 
@@ -1436,9 +1469,9 @@ class Controlled_CVAE(torch.nn.Module):
         self.decoder = Condition_RNN_Decoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.condition_size, cfg.dropout_rate, vocab, cfg)
 
         self.act_predictor = MultiLabel_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.act_size, cfg.dropout_rate)
-        self.personality_predictor = MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.personality_size, cfg.dropout_rate)
+        self.personality_predictor = MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.personality_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
         self.act_mlp = MLP(2*cfg.hidden_size, 4*cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
-        self.personality_mlp = MLP(2*cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
+        self.personality_mlp = MLP(2*cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
 
         self.dec_loss = torch.nn.NLLLoss(ignore_index=0, reduction='mean')
         self.max_ts = cfg.text_max_ts
@@ -1470,7 +1503,7 @@ class Controlled_CVAE(torch.nn.Module):
             y_len = kwargs['text_len']  # batchsize
             y_np = kwargs['text_np']  # seqlen, batchsize
 
-        personality_idx = kwargs['personality_idx']
+        personality_idx = kwargs['personality_idx'] if self.cfg.domain == 'personage' else None
         act_idx = kwargs['act_idx']
         condition = kwargs['condition'].unsqueeze(0)
 
@@ -1524,13 +1557,15 @@ class Controlled_CVAE(torch.nn.Module):
             quantized_z = torch.cat([quantized_h[0], quantized_h[1]], dim=-1)
 
             quantized_act_z = self.act_mlp(quantized_z)
-            quantized_personality_z = self.personality_mlp(quantized_z)
             quantized_act_loss = self.act_predictor(quantized_act_z, act_idx, mode)
-            quantized_personality_loss = self.personality_predictor(quantized_personality_z, personality_idx, mode)
-            #
-
-            loss = recon_loss + KLD + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
-            return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, quantized_personality_loss
+            if self.cfg.domain == 'personage':
+                quantized_personality_z = self.personality_mlp(quantized_z)
+                quantized_personality_loss = self.personality_predictor(quantized_personality_z, personality_idx, mode)
+                loss = recon_loss + KLD + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
+                return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, quantized_personality_loss
+            else:
+                loss = recon_loss + KLD + vocab_vq_loss + quantized_act_loss 
+                return loss, recon_loss, KLD, vocab_vq_loss, quantized_act_loss, None
         else:
             sample_z = torch.randn_like(sample_z).unsqueeze(0)
 
@@ -1759,10 +1794,16 @@ class Copy_Decoder(torch.nn.Module):
         sparse_u_input = torch.autograd.Variable(self.get_sparse_selective_input(slot_np), requires_grad=False)  #singal encoded sentence
         m_embed = self.emb(m_t_input)
         a_context = self.attn_a(last_hidden, slot_enc_out)
-        p_context = self.attn_p(last_hidden, personality_enc_out)
-        gru_in = torch.cat([m_embed, a_context, p_context], dim=2)
+        if personality_enc_out is not None:
+            p_context = self.attn_p(last_hidden, personality_enc_out)
+            gru_in = torch.cat([m_embed, a_context, p_context], dim=2)
+        else:
+            gru_in = torch.cat([m_embed, a_context, a_context], dim=2)
         gru_out, last_hidden = self.gru(gru_in, last_hidden)
-        gen_score = self.proj(torch.cat([a_context, p_context, gru_out], 2)).squeeze(0)
+        if personality_enc_out is not None:
+            gen_score = self.proj(torch.cat([a_context, p_context, gru_out], 2)).squeeze(0)
+        else:
+            gen_score = self.proj(torch.cat([a_context, a_context, gru_out], 2)).squeeze(0)
 
         u_copy_score = torch.tanh(self.proj_copy2(slot_enc_out.transpose(0, 1)))
         u_copy_score = torch.matmul(u_copy_score, gru_out.squeeze(0).unsqueeze(2)).squeeze(2)
@@ -1796,10 +1837,16 @@ class Simple_Decoder(torch.nn.Module):
     def forward(self, slot_enc_out, slot_np, personality_enc_out, personality_np, m_t_input, last_hidden):
         m_embed = self.emb(m_t_input)
         a_context = self.attn_a(last_hidden, slot_enc_out)
-        p_context = self.attn_p(last_hidden, personality_enc_out)
-        gru_in = torch.cat([m_embed, a_context, p_context], dim=2)
+        if personality_enc_out is not None:
+            p_context = self.attn_p(last_hidden, personality_enc_out)
+            gru_in = torch.cat([m_embed, a_context, p_context], dim=2)
+        else:
+            gru_in = torch.cat([m_embed, a_context, a_context], dim=2)
         gru_out, last_hidden = self.gru(gru_in, last_hidden)
-        gen_score = self.proj(torch.cat([a_context, p_context, gru_out], 2)).squeeze(0)
+        if personality_enc_out is not None:
+            gen_score = self.proj(torch.cat([a_context, p_context, gru_out], 2)).squeeze(0)
+        else:
+            gen_score = self.proj(torch.cat([a_context, a_context, gru_out], 2)).squeeze(0)
         proba = torch.nn.functional.softmax(gen_score, dim=1)
         return proba, last_hidden, gru_out
 
@@ -1845,14 +1892,19 @@ class Seq2Seq(torch.nn.Module):
             x_np = kwargs['slot_value_np']  # batchsize
             y_len = kwargs['text_len']  # batchsize
             y_np = kwargs['text_np']  # seqlen, batchsize
+        if self.cfg.domain == 'personage':
+            personality_seq = kwargs['personality_seq']
+            personality_len = kwargs['personality_len']#seqlen, batchsize
+            personality_np = kwargs['personality_np']#seqlen, batchsize
 
-        personality_seq = kwargs['personality_seq']
-        personality_len = kwargs['personality_len']#seqlen, batchsize
-        personality_np = kwargs['personality_np']#seqlen, batchsize
-
-        batch_size = x.size(1)        
-        personality_enc_out, personality_hidden, personality_emb = self.encoder(personality_seq, personality_len)
-        slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, personality_hidden)
+        batch_size = x.size(1) 
+        if self.cfg.domain == 'personage':
+            personality_enc_out, personality_hidden, personality_emb = self.encoder(personality_seq, personality_len)
+            slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, personality_hidden)
+        else:
+            personality_enc_out = None
+            personality_np = None
+            slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len)
         last_hidden = slot_hidden[(self.cfg.encoder_layer_num-1)*2:-1]
         
         if self.cfg.VAE:
@@ -2002,16 +2054,26 @@ class Seq2Seq(torch.nn.Module):
 
 
     def beam_search_decode(self, slot_enc_out, slot_np, personality_enc_out, personality_np, text_tm1, last_hidden):
-
-        vars = torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1), \
-                torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1)
-        decoded = []
-        for i, (slot_enc_out_s, personality_enc_out_s, text_tm1_s, last_hidden_s) \
-            in enumerate(zip(*vars)):
-            decoded_s = self.beam_search_decode_single(slot_enc_out_s, slot_np[:, i].reshape((-1, 1)),\
-                                                           personality_enc_out_s,personality_np[:, i].reshape((-1, 1)),\
-                                                           text_tm1_s, last_hidden_s)
-            decoded.append(decoded_s)
+        if self.cfg.domain == 'personage':
+            vars = torch.split(slot_enc_out, 1, dim=1), torch.split(personality_enc_out, 1, dim=1), \
+                    torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1)
+            decoded = []
+            for i, (slot_enc_out_s, personality_enc_out_s, text_tm1_s, last_hidden_s) \
+                in enumerate(zip(*vars)):
+                decoded_s = self.beam_search_decode_single(slot_enc_out_s, slot_np[:, i].reshape((-1, 1)),\
+                                                               personality_enc_out_s,personality_np[:, i].reshape((-1, 1)),\
+                                                               text_tm1_s, last_hidden_s)
+                decoded.append(decoded_s)
+        else:
+            vars = torch.split(slot_enc_out, 1, dim=1), \
+                    torch.split(text_tm1, 1, dim=1), torch.split(last_hidden, 1, dim=1)
+            decoded = []
+            for i, (slot_enc_out_s, text_tm1_s, last_hidden_s) \
+                in enumerate(zip(*vars)):
+                decoded_s = self.beam_search_decode_single(slot_enc_out_s, slot_np[:, i].reshape((-1, 1)),\
+                                                               None,None,\
+                                                               text_tm1_s, last_hidden_s)
+                decoded.append(decoded_s)
         return [list(_.view(-1)) for _ in decoded]
 
     def supervised_loss(self, pred_y, gt_y, KLD):
