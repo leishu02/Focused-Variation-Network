@@ -314,6 +314,7 @@ class Reader(_ReaderBase):
             value_unique = {}
             for key in self.cfg.key_order:
                 values = self.slot_values[key]
+                #print (key, len(values))
                 value_size = self.cfg.slot_value_size[key]
                 add = [0]*(value_size+1)
                 if key in slot_value:
@@ -334,6 +335,7 @@ class Reader(_ReaderBase):
             #if dial_id < 1000:
             tokenized_data[k].append({**{
                     'id': dial_id,
+                    'dia_act': dial['diaact'],
                     'slot_value':slot_value,
                     'slot_value_size':len(slot_value),
                     'slot_seq': slot_seq + ['EOS_A'],
@@ -362,6 +364,7 @@ class Reader(_ReaderBase):
                 value_unique = {k:turn[k] for k in self.cfg.key_order}
                 encoded_dial.append({**{
                     'id': turn['id'],
+                    'dia_act': turn['dia_act'],
                     'go': self.vocab.sentence_encode(['<go'+str(turn_id)+'>']),
                     'slot_value': turn['slot_value'],
                     'slot_value_size': turn['slot_value_size'],
@@ -540,7 +543,6 @@ class Reader(_ReaderBase):
             for ap_key, dials in encoded_data.items():
                 train += [[d] for d in dials]
             self.train = train
-
             dev = []
             for ap_key, dials in encoded_dev_data.items():
                 dev += [[d] for d in dials]
@@ -555,7 +557,7 @@ class Reader(_ReaderBase):
         random.shuffle(self.test)
 
     def wrap_result(self, turn_batch, pred_y, person_pred = None):
-        field = ['id', 'slot_value', 'slot_seq', 'slot_value_seq', 'personality', 'delex_text', 'text',
+        field = ['id', 'dia_act','slot_value', 'slot_seq', 'slot_value_seq', 'personality', 'delex_text', 'text',
                  'pred_delex_text', 'pred_text', 'delex_text_tokens', 'text_tokens',
                  'pred_delex_text_tokens', 'pred_text_tokens','pred_personality']
         results = []
@@ -572,6 +574,7 @@ class Reader(_ReaderBase):
         for i in range(batch_size):
             entry = {}
             entry['id'] = turn_batch['id'][i]
+            entry['dia_act'] = turn_batch['id'][i]
             entry['slot_value'] = json.dumps(turn_batch['slot_value'][i])
             entry['personality'] = turn_batch['personality'][i]
             entry['slot_seq'] = json.dumps([self.vocab.decode(t) for t in turn_batch['slot_seq'][i]])
