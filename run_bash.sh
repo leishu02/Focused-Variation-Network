@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
+python model.py -domain e2e -network simple_VQVAE -mode train -cfg cuda=True cuda_device=2 beam_search=False codebook_size=4096 encoder_layer_num=3  epoch_num=100 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network simple_seq2seq -mode train -cfg cuda=True cuda_device=0 beam_search=False epoch_num=100 remove_slot_value=False  python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+#python model.py -domain e2e -network simple_seq2seq -mode train -cfg cuda=True cuda_device=0 beam_search=False epoch_num=100 remove_slot_value=False  python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network controlled_CVAE -mode train -cfg cuda=True cuda_device=0 beam_search=False epoch_num=100 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+#python model.py -domain e2e -network controlled_CVAE -mode train -cfg cuda=True cuda_device=0 beam_search=False epoch_num=100 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network simple_CVAE -mode train -cfg cuda=True cuda_device=0 beam_search=False epoch_num=100 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+#python model.py -domain e2e -network simple_CVAE -mode train -cfg cuda=True cuda_device=0 beam_search=False epoch_num=100 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
 #python model.py -domain e2e -network simple_VQVAE -mode train -cfg cuda=True cuda_device=2 beam_search=False codebook_size=4096 encoder_layer_num=3  epoch_num=1 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 

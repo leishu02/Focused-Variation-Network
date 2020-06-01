@@ -34,13 +34,13 @@ class Config:
             self.text_max_ts = 82
             self.slot_value_size = {
                 'name': 1,
-                'eatType': 4,
-                'priceRange': 7,
-                'customer rating': 7,
+                'eatType': 3,
+                'priceRange': 6,
+                'customer rating': 6,
                 'near': 1,
-                'food': 8,
-                'area': 3,
-                'familyFriendly': 3,
+                'food': 7,
+                'area': 2,
+                'familyFriendly': 2,
             }
             self.key_order = ['area', 'customer rating', 'eatType', 'familyFriendly', 'food', 'name', 'near', 'priceRange']
 

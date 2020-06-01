@@ -6,7 +6,7 @@
 
 #python model.py -domain e2e -network simple_CVAE -mode train -cfg cuda=True cuda_device=2 beam_search=False epoch_num=100 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network simple_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=4096 encoder_layer_num=3  epoch_num=100 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+
 
 python model.py -domain e2e -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=4096 encoder_layer_num=3  epoch_num=100 remove_slot_value=False remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
