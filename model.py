@@ -16,6 +16,8 @@ import logging
 import sys
 import ast
 
+from itertools import cycle, islice
+import itertools
 
 def cal(s):
     sum = 0
@@ -89,9 +91,10 @@ class Model:
         kw_ret['go_np'] = go_np
         kw_ret['go'] = go
         kw_ret['act_idx'] = act_idx
-
-        for k in self.cfg.key_order:
-            kw_ret[k] = cuda_(Variable(torch.from_numpy(np.asarray(py_batch[k])).long()), self.cfg)
+        
+        if self.cfg.domain == 'e2e':
+            for k in self.cfg.key_order:
+                kw_ret[k] = cuda_(Variable(torch.from_numpy(np.asarray(py_batch[k])).long()), self.cfg)
         
         if act_idx_dict:
             act_encoding = []
@@ -101,15 +104,33 @@ class Model:
                 else:
                     min_str = str(i)
                 dist = act_idx_dict[min_str]
-                sample = np.random.choice(self.cfg.codebook_size, 1, p=dist)
+                if self.cfg.sample == 'random':
+                    sample = np.random.choice(self.cfg.codebook_size, 1, p=dist)
+                    sample = sample.tolist()
+                else:
+                    samples = np.random.choice(self.cfg.codebook_size, 1000, p=dist)
+                    unique, counts = np.unique(np.asarray(samples), return_counts=True)
+                    sorted_list = sorted(zip(unique, counts), key=lambda x:-x[1])
+                    sample = [sorted_list[0][0]]
                 act_encoding.append(sample)
             kw_ret['act_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(act_encoding))).long(), self.cfg)
+            #print (kw_ret['act_sample_idx'].size())
 
         if personality_idx_dict:
             personality_encoding = []
             for i in py_batch['personality_idx']:
                 dist = personality_idx_dict[str(i)]
-                sample = np.random.choice(self.cfg.codebook_size, 1, p=dist)
+                if self.cfg.sample == 'random':
+                    sample = np.random.choice(self.cfg.codebook_size, 1, p=dist)
+                    sample = sample.tolist()
+                else:
+                    if self.cfg.value_codebook_vocab:
+                        samples = np.random.choice(len(self.reader.vocab), 1000, p=dist)
+                    else:
+                        samples = np.random.choice(self.cfg.codebook_size, 1000, p=dist)
+                    unique, counts = np.unique(np.asarray(samples), return_counts=True)
+                    sorted_list = sorted(zip(unique, counts), key=lambda x:-x[1])
+                    sample = [sorted_list[0][0]]
                 personality_encoding.append(sample)
             #print (len(act_encoding), len(personality_encoding))
             #print (act_encoding, personality_encoding)
@@ -120,12 +141,23 @@ class Model:
                 _encoding = []
                 for i in py_batch[k]:
                     dist = value_idx_dict[k][str(i)]
-                    sample = np.random.choice(self.cfg.codebook_size, 1, p=dist)
+                    if self.cfg.sample == 'random':
+                        sample = np.random.choice(self.cfg.codebook_size, 1, p=dist)
+                        sample = sample.tolist()
+                    else:
+                        if self.cfg.value_codebook_vocab:
+                            samples = np.random.choice(len(self.reader.vocab), 1000, p=dist)
+                        else:
+                            samples = np.random.choice(self.cfg.codebook_size, 1000, p=dist)
+                        unique, counts = np.unique(np.asarray(samples), return_counts=True)
+                        sorted_list = sorted(zip(unique, counts), key=lambda x:-x[1])
+                        sample = [sorted_list[0][0]]
                     _encoding.append(sample)
                     # print (len(act_encoding), len(personality_encoding))
                     # print (act_encoding, personality_encoding)
                 kw_ret[k+'_sample_idx'] = cuda_(
                     Variable(torch.from_numpy(np.asarray(_encoding))).long(), self.cfg)
+                #print (kw_ret[k+'_sample_idx'].size())
 
         if self.cfg.network == 'classification':
             if self.cfg.remove_slot_value == True:
@@ -153,28 +185,24 @@ class Model:
     
         return x, gt_y, kw_ret
     
-    def _predict_convert_batch(self, py_batch, act_idx_dict = None, personality_idx_dict = None):
+    def _predict_convert_batch(self, py_batch, act_idx_dict = None, personality_idx_dict = None, value_idx_dict = None):
         kw_ret = {}
         x = None
         gt_y = None
         batch_size = len(py_batch['slot_seq'])
         slot_np = pad_sequences(py_batch['slot_seq'], self.cfg.slot_max_ts, padding='post',truncating='post').transpose((1, 0))
-        personality_np = pad_sequences(py_batch['personality_seq'], self.cfg.personality_size, padding='post',truncating='post').transpose((1, 0))
+
         slot_value_np = pad_sequences(py_batch['slot_value_seq'], self.cfg.slot_max_ts, padding='post',truncating='post').transpose((1, 0))  # (seqlen, batchsize)
         text_np = pad_sequences(py_batch['text_seq'], self.cfg.text_max_ts, padding='post',truncating='post').transpose((1, 0))
         delex_text_np = pad_sequences(py_batch['delex_text_seq'], self.cfg.text_max_ts, padding='post',truncating='post').transpose((1, 0))
         slot_len = np.array(py_batch['slot_seq_len'])
-        personality_len = np.array(py_batch['personality_seq_len'])
+
         slot_value_len = np.array(py_batch['slot_value_seq_len'])
         text_len = np.array(py_batch['text_seq_len'])
         delex_text_len = np.array(py_batch['delex_text_seq_len'])
         go_np = pad_sequences(py_batch['go'], 1, padding='post',truncating='post').transpose((1, 0))
         go = cuda_(torch.autograd.Variable(torch.from_numpy(go_np).long()), self.cfg)
-        personality_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['personality_idx'])).long()), self.cfg)
-        personality_flatten_idx_np = np.zeros((batch_size, self.cfg.personality_size))
-        for i, v in enumerate(py_batch['personality_idx']):
-            personality_flatten_idx_np[i,v] = 1
-        personality_flatten_idx = cuda_(Variable(torch.from_numpy(np.asarray(personality_flatten_idx_np)).float()), self.cfg)
+
         act_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['slot_idx'])).float()), self.cfg)
         act_flatten_idx_list = [ cal(s) for s in py_batch['slot_idx']]
         act_flatten_idx_np = np.zeros((batch_size, pow(2, self.cfg.act_size)))
@@ -182,26 +210,40 @@ class Model:
             act_flatten_idx_np[i,v] = 1
         act_flatten_idx = cuda_(Variable(torch.from_numpy(np.asarray(act_flatten_idx_np)).float()), self.cfg)
 
+        if self.cfg.domain == 'personage':
+            personality_np = pad_sequences(py_batch['personality_seq'], self.cfg.personality_size, padding='post',
+                                           truncating='post').transpose((1, 0))
+            personality_len = np.array(py_batch['personality_seq_len'])
+            personality_idx = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['personality_idx'])).long()), self.cfg)
+            personality_flatten_idx_np = np.zeros((batch_size, self.cfg.personality_size))
+            for i, v in enumerate(py_batch['personality_idx']):
+                personality_flatten_idx_np[i,v] = 1
+            personality_flatten_idx = cuda_(Variable(torch.from_numpy(np.asarray(personality_flatten_idx_np)).float()), self.cfg)
+            kw_ret['condition'] = torch.cat([act_flatten_idx, personality_flatten_idx], dim=-1)
+            kw_ret['personality_np'] = personality_np  # seqlen, batchsize
+            kw_ret['personality_seq'] = cuda_(Variable(torch.from_numpy(personality_np).long()), self.cfg)  # seqlen, batchsize
+            kw_ret['personality_len'] = personality_len  # batchsize
+            kw_ret['personality_idx'] = personality_idx
+        else:
+            kw_ret['condition'] = cuda_(Variable(torch.from_numpy(np.asarray(py_batch['unique'])).float()), self.cfg)
+
+
         kw_ret['act_flatten_idx'] = act_flatten_idx
-        kw_ret['condition'] = torch.cat([act_flatten_idx, personality_flatten_idx], dim=-1)
         kw_ret['slot_np'] = slot_np  # seqlen, batchsize
         kw_ret['slot_value_np'] = slot_value_np  # seqlen, batchsize
-        kw_ret['personality_np'] = personality_np  # seqlen, batchsize
-        kw_ret['personality_seq'] = cuda_(Variable(torch.from_numpy(personality_np).long()), self.cfg)  # seqlen, batchsize
         kw_ret['text_np'] = text_np  # seqlen, batchsize
         kw_ret['delex_text_np'] = delex_text_np  # seqlen, batchsize
         kw_ret['slot_len'] = slot_len  # batchsize
         kw_ret['slot_value_len'] = slot_value_len  # batchsize
-        kw_ret['personality_len'] = personality_len  # batchsize
         kw_ret['text_len'] = text_len  # batchsize
         kw_ret['delex_text_len'] = delex_text_len  # batchsize
         kw_ret['go_np'] = go_np
         kw_ret['go'] = go
-        kw_ret['personality_idx'] = personality_idx
         kw_ret['act_idx'] = act_idx
 
-        for k in self.cfg.key_order:
-            kw_ret[k] = cuda_(Variable(torch.from_numpy(np.asarray(py_batch[k])).long()), self.cfg)
+        if self.cfg.domain == 'e2e':
+            for k in self.cfg.key_order:
+                kw_ret[k] = cuda_(Variable(torch.from_numpy(np.asarray(py_batch[k])).long()), self.cfg)
         
         if act_idx_dict and personality_idx_dict:
             act_encoding = []
@@ -213,7 +255,10 @@ class Model:
                 act_encoding+=sample.tolist()
             for i in py_batch['personality_idx']:
                 dist = personality_idx_dict[str(i)]
-                sample = np.random.choice(self.cfg.codebook_size, 100000, p=dist)
+                if self.cfg.value_codebook_vocab:
+                    sample = np.random.choice(len(self.reader.vocab), 1000, p=dist)
+                else:
+                    sample = np.random.choice(self.cfg.codebook_size, 1000, p=dist)
                 personality_encoding+=sample.tolist()
             
             ae_count = np.bincount(np.asarray(act_encoding))
@@ -258,10 +303,62 @@ class Model:
                 '''   
             print (len(act_encoding), len(personality_encoding))
             print (personality_encoding)
-                
-            
             kw_ret['act_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(act_encoding))).long(), self.cfg)
-            kw_ret['personality_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(personality_encoding))).long(), self.cfg)
+            kw_ret['personality_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(personality_encoding))).long(), self.cfg) 
+                
+        if value_idx_dict:
+            act_encoding = []
+            i = py_batch['slot_idx'][0]
+            dist = act_idx_dict[str(i)]
+            sample = np.random.choice(self.cfg.codebook_size, 1000000, p=dist)
+            unique, counts = np.unique(np.asarray(sample), return_counts=True)
+            sorted_list = sorted(zip(unique, counts), key=lambda x:-x[1])
+            act_encoding+=sample.tolist()
+            if len(sorted_list) >= batch_size:
+                sorted_list = sorted_list[batch_size]
+            unique = [ s[0]for s in sorted_list]
+            most_act = sorted_list[0][0]
+            #act_encoding = list(itertools.chain.from_iterable(itertools.repeat(u, batch_size) for u in unique))
+            #random.shuffle(act_encoding)
+            act_encoding = [most_act for _ in range(batch_size)]#act_encoding[:batch_size]
+            #kw_ret['act_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray([most_act]*batch_size))).long(), self.cfg).unsqueeze(1) 
+            kw_ret['act_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(act_encoding))).long(), self.cfg).unsqueeze(1)   
+            
+            
+            k_count = 0
+            chunk = int(batch_size/len(self.cfg.key_order))
+            for k in self.cfg.key_order:
+                i = py_batch[k][0]
+                print ('batch_size', batch_size)
+                dist = value_idx_dict[k][str(i)]
+                if self.cfg.value_codebook_vocab:
+                    sample = np.random.choice(len(self.reader.vocab), 10000, p=dist)
+                else:
+                    sample = np.random.choice(self.cfg.codebook_size, 10000, p=dist)
+                unique, counts = np.unique(np.asarray(sample), return_counts=True)
+                sorted_list = sorted(zip(unique, counts), key=lambda x:-x[1])
+ 
+                max_unique = sorted_list[0][0]
+                
+                if len(sorted_list) >= 3:
+                    sorted_list = sorted_list[:3]
+                unique = [s[0] for s in sorted_list]
+                print (k, 'unique', len(unique), sorted_list) 
+                _cand = list(itertools.chain.from_iterable(itertools.repeat(u, batch_size) for u in unique))
+                random.shuffle(_cand)
+                _encoding = [max_unique]*batch_size
+                #_encoding = _encoding[:batch_size]
+                print (max_unique,_encoding)
+                if k not in ['name']:
+                    #_encoding[k_count*chunk:(k_count+1)*chunk] = [max_unique]*chunk
+                    _encoding[k_count*chunk:(k_count+1)*chunk] = _cand[:chunk]
+                    k_count += 1
+                print (k_count, _encoding)
+                #kw_ret[k+'_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray(_encoding))).long(), self.cfg).unsqueeze(1)
+                kw_ret[k+'_sample_idx'] = cuda_(Variable(torch.from_numpy(np.asarray([max_unique]*batch_size))).long(), self.cfg).unsqueeze(1)
+                        
+            
+
 
 
         if self.cfg.network == 'classification':
@@ -332,8 +429,8 @@ class Model:
                                             act_vq_loss.item(), personality_vq_loss.item(), grad))
                         elif self.cfg.network == 'controlled_CVAE':
                             logging.debug(
-                                'loss:{} reconloss:{} KLD:{} actloss:{} otherloss:{} vocabvqloss{} grad:{}'.format(
-                                    loss.item(), recon_loss.item(), KLD.item(), act_loss.item(), personality_loss.item(), vocab_vq_loss.item(), grad))
+                                'loss:{} reconloss:{} KLD:{} actloss:{}  grad:{}'.format(
+                                    loss.item(), recon_loss.item(), KLD.item(), act_loss.item(),  grad))
                         elif self.cfg.VAE or 'simple_CVAE' in self.cfg.network:
                             logging.debug('loss:{} network:{} kld:{} grad:{}'.format(loss.item(), network_loss.item(), kld.item(),grad))
                         else:
@@ -346,9 +443,8 @@ class Model:
                                             act_vq_loss.item(), grad))
                         elif self.cfg.network == 'controlled_CVAE':
                             logging.debug(
-                                'loss:{} reconloss:{} KLD:{} actloss:{} vocabvqloss{} grad:{}'.format(
-                                    loss.item(), recon_loss.item(), KLD.item(), act_loss.item(),
-                                    vocab_vq_loss.item(), grad))
+                                'loss:{} reconloss:{} KLD:{} actloss:{}  grad:{}'.format(
+                                    loss.item(), recon_loss.item(), KLD.item(), act_loss.item(),grad))
                         elif self.cfg.VAE or 'simple_CVAE' in self.cfg.network:
                             logging.debug(
                                 'loss:{} network:{} kld:{} grad:{}'.format(loss.item(), network_loss.item(), kld.item(),
@@ -413,7 +509,7 @@ class Model:
             self.personality_predictor()
             self.person_m.eval()
         if 'VQVAE' in self.cfg.network:
-            act_idx_dict, personality_idx_dict = self.getDist()
+            act_idx_dict, personality_idx_dict, value_idx_dict = self.getDist()
         self.m.eval()
         self.reader.result_file = None
         data_iterator = self.reader.mini_batch_iterator(data)
@@ -421,15 +517,18 @@ class Model:
         for batch_num, dial_batch in enumerate(data_iterator):
             for turn_num, turn_batch in enumerate(dial_batch):
                 if 'VQVAE' in self.cfg.network:
-                    x, gt_y, kw_ret = self._predict_convert_batch(turn_batch, act_idx_dict, personality_idx_dict)
+                    x, gt_y, kw_ret = self._predict_convert_batch(turn_batch, act_idx_dict, personality_idx_dict, value_idx_dict)
                 else:
                     x, gt_y, kw_ret = self._predict_convert_batch(turn_batch)
-                pred_y = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
+                pred_y, _, _ = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
                 if self.cfg.network != 'classification':
                     batch_size = len(turn_batch['id'])
                     batch_gen = []
                     batch_gen_len = []
+                    chunk = int(batch_size/len(self.cfg.key_order))
                     for i in range(batch_size):
+                        if i%chunk == 0:
+                            print (self.cfg.key_order[int(i/chunk)], 'is freeze')
                         word_list = []
                         for t in pred_y[i]:
                             word = self.reader.vocab.decode(t.item())
@@ -565,9 +664,9 @@ class Model:
                                 act_vq_loss.item()))
                     elif self.cfg.network == 'controlled_CVAE':
                         logging.debug(
-                            'loss:{} reconloss:{} KLD:{} actloss:{}vocabvqloss{}'.format(
+                            'loss:{} reconloss:{} KLD:{} actloss:{}'.format(
                                 loss.item(), recon_loss.item(), KLD.item(), act_loss.item(),
-                                vocab_vq_loss.item()))
+                                ))
                     elif self.cfg.VAE or 'CVAE' in self.cfg.network:
                         logging.debug(
                             'loss:{} network:{} kld:{} '.format(loss.item(), network_loss.item(), kld.item()))

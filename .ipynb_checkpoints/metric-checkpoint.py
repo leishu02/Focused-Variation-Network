@@ -185,6 +185,17 @@ class Evaluator:
                 else:
                     gt_y = json.loads(turn['text_tokens'])
                     pred_y = json.loads(turn['pred_text_tokens'])
+                    if self.cfg.domain == 'e2e':
+                        pred_text = turn['pred_text']
+                        gt_text = turn['text']
+                        diaact = json.loads(turn['dia_act'])
+                        for k, p in zip(['name', 'near'],['nameVariable', 'nearVariable']):
+                            if k in diaact:
+                                v = diaact[k].lower()
+                                pred_text = pred_text.replace(p, v)
+                                gt_text = gt_text.replace(p, v)
+                        gt_y = gt_text.split(' ')
+                        pred_y = pred_text.split(' ')
                 gt_sentences.append(gt_y)
                 pred_sentences.append(pred_y)
                 
@@ -208,7 +219,10 @@ class Evaluator:
             if self.cfg.remove_slot_value:
                 ap_key = ' '.join(sorted(list(json.loads(row['slot_value']).keys())))
             else:
-                key_dict = json.loads(row['slot_value'])
+                if self.cfg.domain == 'e2e':
+                    key_dict = key_dict = json.loads(row['dia_act'])
+                else:
+                    key_dict = json.loads(row['slot_value'])
                 sorted_key = sorted(list(key_dict.keys()))
                 ap_key = ' '.join([k+'_'+key_dict[k] for k in sorted_key])
                 
@@ -218,8 +232,17 @@ class Evaluator:
                 gen.append(row['pred_delex_text'])
                 truth_ap_dict[ap_key].append(row['delex_text'])
             else:
-                gen.append(row['pred_text'])
-                truth_ap_dict[ap_key].append(row['text'])
+                pred_text = row['pred_text']
+                gt_text = row['text']
+                if self.cfg.domain == 'e2e':
+                    diaact = json.loads(row['dia_act'])
+                    for k, p in zip(['name', 'near'],['nameVariable', 'nearVariable']):
+                        if k in diaact:
+                            v = diaact[k].lower()
+                            pred_text = pred_text.replace(p, v)
+                            gt_text = gt_text.replace(p, v)
+                gen.append(pred_text)
+                truth_ap_dict[ap_key].append(gt_text)
         cwd = os.getcwd()
         core = multiprocessing.cpu_count()
         print ('multiprocess core size', core)

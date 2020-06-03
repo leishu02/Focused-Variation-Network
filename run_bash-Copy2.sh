@@ -10,7 +10,10 @@
 
 #python model.py -domain e2e -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=4096 encoder_layer_num=3  epoch_num=1 remove_slot_value=False epoch_num=1 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=0 beam_search=False codebook_size=2046 encoder_layer_num=3 commitment_cost=0.95 epoch_num=100 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+python model.py -domain personage -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=0 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.95 epoch_num=100 remove_slot_value=True value_loss=False batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+
+python model.py -domain personage -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=0 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.95 epoch_num=100 remove_slot_value=True value_loss=True batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+
 
 #python model.py -domain personage -network controlled_CVAE -mode eval -cfg cuda=True cuda_device=2 beam_search=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 #python model.py -domain personage -network simple_CVAE -mode eval -cfg cuda=True cuda_device=2 beam_search=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'

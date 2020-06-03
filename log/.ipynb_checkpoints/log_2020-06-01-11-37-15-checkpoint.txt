@@ -1,0 +1,158 @@
+DEBUG:root:network : controlled_VQVAE
+cuda_device : 1
+seed : 0
+spv_proportion : 100
+truncated : False
+act_size : 8
+personality_size : 0
+domain : e2e
+dialog_path : data/dialogue/e2e-dataset/train.json
+test_dialog_path : data/dialogue/e2e-dataset/test.json
+dev_dialog_path : data/dialogue/e2e-dataset/test.json
+slot_path : data/dialogue/e2e-dataset/slot_value.json
+slot_max_ts : 21
+text_max_ts : 82
+slot_value_size : {'name': 1, 'eatType': 3, 'priceRange': 6, 'customer rating': 6, 'near': 1, 'food': 7, 'area': 2, 'familyFriendly': 2}
+condition_size : 36
+key_order : ['area', 'customer rating', 'eatType', 'familyFriendly', 'food', 'name', 'near', 'priceRange']
+split : None
+python_path : /home/huxu/anaconda3/envs/p3-torch13/bin/python
+decoder_network : LSTM
+various_go : False
+commitment_cost : 0.25
+grad_clip_norm : 1.0
+max_turn : 200
+emb_size : 300
+emb_trainable : True
+hidden_size : 300
+codebook_size : 1024
+lr : 0.001
+lr_decay : 1.0
+batch_size : 512
+dropout_rate : 0.0
+epoch_num : 100
+cuda : True
+early_stop_count : 30
+vocab_size : None
+remove_slot_value : False
+encoder_layer_num : 3
+beam_search : False
+beam_size : 10
+beam_len_bonus : 0.5
+teacher_force : 50
+glove_path : ./data/glove.840B.300d.txt
+model_path : ./models/controlled_VQVAE_e2e_LSTM_CB1024EL3BS512CC0d25.pkl
+result_path : ./results/controlled_VQVAE_e2e_LSTM_CB1024EL3BS512CC0d25TMT82.csv
+vocab_emb : ./vocabs/embedding_e2e.npy
+vocab_path : ./vocabs/e2e.p
+
+DEBUG:root:Device: 1
+INFO:root:total trainable params: 32518943
+INFO:root:Controlled_VQVAE(
+  (vae_encoder): LSTMDynamicEncoder(
+    (embedding): Embedding(2949, 300)
+    (lstm): LSTM(300, 300, num_layers=3, bidirectional=True)
+  )
+  (vocab_vq_vae): Vocab_VectorQuantizer(
+    (embedding): Embedding(2949, 300)
+  )
+  (encoder): LSTMDynamicEncoder(
+    (embedding): Embedding(2949, 300)
+    (lstm): LSTM(300, 300, num_layers=3, bidirectional=True)
+  )
+  (act_vq_vae): VectorQuantizer(
+    (_embedding): Embedding(1024, 300)
+  )
+  (value_vq_vae): VectorQuantizer(
+    (_embedding): Embedding(1024, 300)
+  )
+  (decoder): Attn_RNN_Decoder(
+    (emb): Embedding(2949, 300)
+    (a_attn): Attn(
+      (attn): Linear(in_features=1200, out_features=600, bias=True)
+    )
+    (p_attn): Attn(
+      (attn): Linear(in_features=1200, out_features=600, bias=True)
+    )
+    (rnn): LSTM(1500, 600)
+    (emb_proj): Linear(in_features=600, out_features=300, bias=True)
+    (proj): Linear(in_features=300, out_features=2949, bias=True)
+  )
+  (act_predictor): MultiLabel_Classification(
+    (linear1): Linear(in_features=300, out_features=150, bias=True)
+    (linear2): Linear(in_features=150, out_features=8, bias=True)
+  )
+  (act_mlp): MLP(
+    (linear1): Linear(in_features=600, out_features=1200, bias=True)
+    (linear2): Linear(in_features=1200, out_features=300, bias=True)
+  )
+  (value_predictor): ModuleList(
+    (0): MultiClass_Classification(
+      (linear1): Linear(in_features=300, out_features=150, bias=True)
+      (linear2): Linear(in_features=150, out_features=3, bias=True)
+    )
+    (1): MultiClass_Classification(
+      (linear1): Linear(in_features=300, out_features=150, bias=True)
+      (linear2): Linear(in_features=150, out_features=7, bias=True)
+    )
+    (2): MultiClass_Classification(
+      (linear1): Linear(in_features=300, out_features=150, bias=True)
+      (linear2): Linear(in_features=150, out_features=4, bias=True)
+    )
+    (3): MultiClass_Classification(
+      (linear1): Linear(in_features=300, out_features=150, bias=True)
+      (linear2): Linear(in_features=150, out_features=3, bias=True)
+    )
+    (4): MultiClass_Classification(
+      (linear1): Linear(in_features=300, out_features=150, bias=True)
+      (linear2): Linear(in_features=150, out_features=8, bias=True)
+    )
+    (5): MultiClass_Classification(
+      (linear1): Linear(in_features=300, out_features=150, bias=True)
+      (linear2): Linear(in_features=150, out_features=2, bias=True)
+    )
+    (6): MultiClass_Classification(
+      (linear1): Linear(in_features=300, out_features=150, bias=True)
+      (linear2): Linear(in_features=150, out_features=2, bias=True)
+    )
+    (7): MultiClass_Classification(
+      (linear1): Linear(in_features=300, out_features=150, bias=True)
+      (linear2): Linear(in_features=150, out_features=7, bias=True)
+    )
+  )
+  (value_mlp): ModuleList(
+    (0): MLP(
+      (linear1): Linear(in_features=600, out_features=1200, bias=True)
+      (linear2): Linear(in_features=1200, out_features=300, bias=True)
+    )
+    (1): MLP(
+      (linear1): Linear(in_features=600, out_features=1200, bias=True)
+      (linear2): Linear(in_features=1200, out_features=300, bias=True)
+    )
+    (2): MLP(
+      (linear1): Linear(in_features=600, out_features=1200, bias=True)
+      (linear2): Linear(in_features=1200, out_features=300, bias=True)
+    )
+    (3): MLP(
+      (linear1): Linear(in_features=600, out_features=1200, bias=True)
+      (linear2): Linear(in_features=1200, out_features=300, bias=True)
+    )
+    (4): MLP(
+      (linear1): Linear(in_features=600, out_features=1200, bias=True)
+      (linear2): Linear(in_features=1200, out_features=300, bias=True)
+    )
+    (5): MLP(
+      (linear1): Linear(in_features=600, out_features=1200, bias=True)
+      (linear2): Linear(in_features=1200, out_features=300, bias=True)
+    )
+    (6): MLP(
+      (linear1): Linear(in_features=600, out_features=1200, bias=True)
+      (linear2): Linear(in_features=1200, out_features=300, bias=True)
+    )
+    (7): MLP(
+      (linear1): Linear(in_features=600, out_features=1200, bias=True)
+      (linear2): Linear(in_features=1200, out_features=300, bias=True)
+    )
+  )
+  (dec_loss): NLLLoss()
+)

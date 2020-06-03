@@ -310,23 +310,25 @@ class Reader(_ReaderBase):
                 k = ' '.join([k+'_'+slot_value[k] for k in keys])
             if self.cfg.domain == 'personage':
                 k+= ' ' + personality
+                
             unique = []
             value_unique = {}
-            for key in self.cfg.key_order:
-                values = self.slot_values[key]
-                #print (key, len(values))
-                value_size = self.cfg.slot_value_size[key]
-                add = [0]*(value_size+1)
-                if key in slot_value:
-                    if key in ['name', 'near']:
-                        add[0] = 1
+            if self.cfg.domain == 'e2e':
+                for key in self.cfg.key_order:
+                    values = self.slot_values[key]
+                    #print (key, len(values))
+                    value_size = self.cfg.slot_value_size[key]
+                    add = [0]*(value_size+1)
+                    if key in slot_value:
+                        if key in ['name', 'near']:
+                            add[0] = 1
+                        else:
+                            idx = values.index(slot_value[key])
+                            add[idx] = 1
                     else:
-                        idx = values.index(slot_value[key])
-                        add[idx] = 1
-                else:
-                    add[-1] = 1
-                unique += add
-                value_unique[key] = np.array(add.index(1))
+                        add[-1] = 1
+                    unique += add
+                    value_unique[key] = np.array(add.index(1))
                 #print (key, len(add))
             #print (len(unique))
 
@@ -361,7 +363,10 @@ class Reader(_ReaderBase):
         for ap, dial in tokenized_data.items():
             encoded_dial = []
             for turn_id, turn in enumerate(dial):
-                value_unique = {k:turn[k] for k in self.cfg.key_order}
+                if self.cfg.domain == 'e2e':
+                    value_unique = {k:turn[k] for k in self.cfg.key_order}
+                else:
+                    value_unique = {}
                 encoded_dial.append({**{
                     'id': turn['id'],
                     'dia_act': turn['dia_act'],
@@ -495,27 +500,38 @@ class Reader(_ReaderBase):
         tokenized_test_data = self._get_tokenized_data(test_data, construct_vocab, self.cfg.remove_slot_value)
         test_unique = tokenized_test_data.keys()
         print('test_unique', len(test_unique))
-        print('test train intersection', len(train_unique.intersection(dev_unique)))
+        print('test train intersection', len(train_unique.intersection(test_unique)))
 
 
 
         
-        def findtargetdata(data, p):
+        def findtargetdata(data, p=None):
             keys = data.keys()
             key_lens = [len(k.split(' ')) for k in keys]
             max_len = max(key_lens)
             for k, l in zip(keys, key_lens):
-                if l == max_len and p in k:
-                    print (k, p, len(data[k]))
-                    return k
+                if p is not None:
+                    if l == max_len and p in k:
+                        print (k, p, len(data[k]))
+                        return k
+                else:
+                    if l == max_len:
+                        print (k, len(data[k]))
+                        return k
 
         if self.cfg.mode == 'predict' and self.cfg.domain == 'personage':
             k = findtargetdata(tokenized_test_data, 'extravert')
             predict_tokenized_test_data = {}
-            p = list(self.personality2idx.keys())[0]
-            print ('personality: ', p)
-            k = findtargetdata(tokenized_test_data, p)
+            #p = list(self.personality2idx.keys())[0]
+            #print ('personality: ', p)
+            #k = findtargetdata(tokenized_test_data, p)
             predict_tokenized_test_data[k] = tokenized_test_data[k]
+            
+        elif self.cfg.mode == 'predict' and self.cfg.domain == 'e2e':
+            k = findtargetdata(tokenized_test_data)
+            predict_tokenized_test_data = {}
+            predict_tokenized_test_data[k] = [tokenized_test_data[k][0]]*120
+            
                         
 
         max_variety = max(max([len(v) for v in tokenized_data.values()]), max([len(v) for v in tokenized_test_data.values()]))
@@ -574,7 +590,7 @@ class Reader(_ReaderBase):
         for i in range(batch_size):
             entry = {}
             entry['id'] = turn_batch['id'][i]
-            entry['dia_act'] = turn_batch['id'][i]
+            entry['dia_act'] = json.dumps(turn_batch['dia_act'][i])
             entry['slot_value'] = json.dumps(turn_batch['slot_value'][i])
             entry['personality'] = turn_batch['personality'][i]
             entry['slot_seq'] = json.dumps([self.vocab.decode(t) for t in turn_batch['slot_seq'][i]])

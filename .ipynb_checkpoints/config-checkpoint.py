@@ -13,14 +13,19 @@ class Config:
         self.truncated = False
         self.act_size = 8
         self.personality_size = 0
-
+        self.value_codebook_vocab = False
+        self.sample =  'top'#'random'
+        self.value_loss = True
+        
         self.domain = domain
         fd = domain_config.domain_path[domain]['fd']
         self.dialog_path = fd+domain_config.domain_path[domain]['Lei_dialog_path']
         self.test_dialog_path =fd+domain_config.domain_path[domain]['Lei_test_dialog_path']
         if self.domain == 'e2e':
-            self.dev_dialog_path = fd+domain_config.domain_path[domain]['Lei_test_dialog_path']
-            self.condition_size = 79
+            self.dev_dialog_path = fd+domain_config.domain_path[domain]['Lei_dev_dialog_path']
+            
+            
+            
         self.slot_path = fd+domain_config.domain_path[domain]['slot_path']
         if self.domain == 'personage':
             self.personality_size = 5
@@ -32,6 +37,18 @@ class Config:
         elif self.domain == 'e2e':
             self.slot_max_ts = 21
             self.text_max_ts = 82
+            self.slot_value_size = {
+                'name': 1,
+                'eatType': 3,
+                'priceRange': 6,
+                'customer rating': 6,
+                'near': 1,
+                'food': 7,
+                'area': 2,
+                'familyFriendly': 2,
+            }
+            self.condition_size = sum(list(self.slot_value_size.values())) + len(self.slot_value_size)
+        self.key_order = ['area', 'customer rating', 'eatType', 'familyFriendly', 'food', 'name', 'near', 'priceRange']
 
         self.split = domain_config.domain_path[domain]['split']
         self.python_path = ''
@@ -92,17 +109,20 @@ class Config:
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _controlled_VQVAE_update(self):
-        self.model_path = './models/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
-        self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.model_path = './models/controlled_VQVAE_' + self.domain + '_' + self.decoder_network+'_VCB'+str(self.value_codebook_vocab)
+        self.result_path = './results/controlled_VQVAE_' + self.domain + '_' + self.decoder_network+'_VCB'+str(self.value_codebook_vocab)
         self.vocab_emb = './vocabs/embedding_' + self.domain 
         self.vocab_path = './vocabs/' + self.domain 
+        if not self.value_loss:
+            self.model_path += '_VLFalse'
+            self.result_path += '_VLFalse'
         if self.remove_slot_value:
             self.model_path += '_delex'
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
-        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+"CC"+str(self.commitment_cost).replace('.','d')
-        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+"CC"+str(self.commitment_cost).replace('.','d')+'TMT'+str(self.text_max_ts)
+        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+"CC"+str(self.commitment_cost).replace('.','d')+'S'+self.sample
+        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+"CC"+str(self.commitment_cost).replace('.','d')+'S'+self.sample+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
@@ -137,17 +157,20 @@ class Config:
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _focused_VQVAE_update(self):
-        self.model_path = './models/focused_VQVAE_' + self.domain + '_' + self.decoder_network
-        self.result_path = './results/focused_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.model_path = './models/focused_VQVAE_' + self.domain + '_' + self.decoder_network+'_VCB'+str(self.value_codebook_vocab)
+        self.result_path = './results/focused_VQVAE_' + self.domain + '_' + self.decoder_network+'_VCB'+str(self.value_codebook_vocab)
         self.vocab_emb = './vocabs/embedding_' + self.domain
         self.vocab_path = './vocabs/' + self.domain
+        if not self.value_loss:
+            self.model_path += '_VLFalse'
+            self.result_path += '_VLFalse'
         if self.remove_slot_value:
             self.model_path += '_delex'
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
-        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)
-        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
+        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+'S'+self.sample
+        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+'S'+self.sample+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
@@ -183,17 +206,20 @@ class Config:
         self.glove_path = './data/glove.840B.300d.txt'
 
     def _simple_VQVAE_update(self):
-        self.model_path = './models/simple_VQVAE_' + self.domain + '_' + self.decoder_network
-        self.result_path = './results/simple_VQVAE_' + self.domain + '_' + self.decoder_network
+        self.model_path = './models/simple_VQVAE_' + self.domain + '_' + self.decoder_network+'_VCB'+str(self.value_codebook_vocab)
+        self.result_path = './results/simple_VQVAE_' + self.domain + '_' + self.decoder_network+'_VCB'+str(self.value_codebook_vocab)
         self.vocab_emb = './vocabs/embedding_' + self.domain 
         self.vocab_path = './vocabs/' + self.domain 
+        if not self.value_loss:
+            self.model_path += '_VLFalse'
+            self.result_path += '_VLFalse'
         if self.remove_slot_value:
             self.model_path += '_delex'
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
-        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)
-        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'TMT'+str(self.text_max_ts)
+        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+'S'+self.sample
+        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+'S'+self.sample+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
