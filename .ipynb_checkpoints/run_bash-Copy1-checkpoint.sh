@@ -10,17 +10,20 @@
 
 #python model.py -domain personage -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3  epoch_num=100 remove_slot_value=True batch_size=128 value_codebook_vocab=True value_loss=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain personage -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3  epoch_num=100 remove_slot_value=True batch_size=128 value_codebook_vocab=True value_loss=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+#python model.py -domain personage -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3  epoch_num=100 remove_slot_value=True batch_size=128 value_codebook_vocab=True value_loss=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3  epoch_num=100 remove_slot_value=False batch_size=128 value_codebook_vocab=True value_loss=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+#python model.py -domain e2e -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3  epoch_num=100 remove_slot_value=False batch_size=128 value_codebook_vocab=True value_loss=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3  epoch_num=100 remove_slot_value=False batch_size=128 value_codebook_vocab=True value_loss=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+#python model.py -domain e2e -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3  epoch_num=100 remove_slot_value=False batch_size=128 value_codebook_vocab=True value_loss=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+python model.py -domain e2e -network simple_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.25 epoch_num=100 remove_slot_value=False value_loss=True batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.95 epoch_num=100 remove_slot_value=False value_loss=False batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+#python model.py -domain e2e -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.25 epoch_num=100 remove_slot_value=False value_loss=True batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.25 epoch_num=100 remove_slot_value=False value_loss=True batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+#python model.py -domain e2e -network focused_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.25 epoch_num=100 remove_slot_value=False value_loss=True batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
-python model.py -domain e2e -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.25 epoch_num=100 remove_slot_value=False value_loss=False batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+#python model.py -domain e2e -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.25 epoch_num=100 remove_slot_value=False value_loss=True batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
+
+#python model.py -domain e2e -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=512 encoder_layer_num=3 commitment_cost=0.25 epoch_num=100 remove_slot_value=False value_loss=False batch_size=128 value_codebook_vocab=True python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 
 #python model.py -domain e2e -network controlled_VQVAE -mode train -cfg cuda=True cuda_device=1 beam_search=False codebook_size=2046 encoder_layer_num=3 commitment_cost=0.95 epoch_num=1 remove_slot_value=False python_path='/home/huxu/anaconda3/envs/p3-torch13/bin/python'
 

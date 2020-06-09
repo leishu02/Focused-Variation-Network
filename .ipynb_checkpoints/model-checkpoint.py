@@ -384,8 +384,41 @@ class Model:
             assert()
     
         return x, gt_y, kw_ret
+    
+    def train_higher(self):
+        if self.cfg.network == 'controlled_VQVAE':
+            phases = ['all']#['focus', 'ctrl']
+        else:
+            phases = ['all']
+            
 
-    def train(self):
+            
+        for p in phases:
+            print (p)
+            logging.debug('phase %s ' % (p))
+            if p == 'ctrl':
+                logging.debug('freeze parameters...')
+                module_list = [self.m.vae_encoder, self.m.vocab_vq_vae, self.m.act_vq_vae, self.m.act_predictor, self.m.act_mlp]
+                if self.cfg.domain == 'e2e':
+                    module_list += [self.m.value_vq_vae, self.m.value_predictor, self.m.value_mlp]
+                elif self.cfg.domain == 'personage':
+                    module_list += [self.m.personality_vq_vae, self.m.personality_predictor, self.m.personality_mlp]
+                for m in module_list:
+                    self.freeze_module(m)
+                self.count_params()
+                self.train(p)
+                logging.debug('unfreeze parameters...')
+                for m in module_list:
+                    self.unfreeze_module(m)
+                self.count_params()
+            else:
+                self.train(p)
+            self.load_model()
+            self.eval(data='test')
+            
+
+    def train(self, phase = 'all'):
+        print ('train::phase', phase)
         lr = self.cfg.lr
         prev_min_loss = np.inf
         prev_max_metrics = 0.
@@ -393,7 +426,7 @@ class Model:
         train_time = 0
         for epoch in range(self.cfg.epoch_num):
             sw = time.time()
-            if epoch <= self.base_epoch:
+            if self.cfg.mode == 'adjust' and epoch <= self.base_epoch:
                 continue
             sup_loss = 0
             sup_cnt = 0
@@ -405,7 +438,10 @@ class Model:
                         logging.debug('iter %d turn %d' % (iter_num, turn_num))
                     optim.zero_grad()
                     x, gt_y, kw_ret = self._convert_batch(turn_batch)
-                    if 'VQVAE' in self.cfg.network:
+                    if self.cfg.network == 'controlled_VQVAE':
+                        loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss\
+                            = self.m(x=x, gt_y=gt_y, mode='train', phase=phase, **kw_ret)
+                    elif 'VQVAE' in self.cfg.network:
                         loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss\
                             = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                     elif self.cfg.network == 'classification':
@@ -572,7 +608,10 @@ class Model:
         mode = 'test'
         for batch_num, dial_batch in enumerate(data_iterator):
             for turn_num, turn_batch in enumerate(dial_batch):
-                if 'VQVAE' in self.cfg.network:
+                if self.cfg.network == 'controlled_VQVAE':
+                    x, gt_y, kw_ret = self._convert_batch(turn_batch, act_idx_dict, personality_idx_dict, value_idx_dict)
+                    pred_y, _, _ = self.m(x=x, gt_y=gt_y, mode=mode, phase='all', **kw_ret)
+                elif 'VQVAE' in self.cfg.network:
                     x, gt_y, kw_ret = self._convert_batch(turn_batch, act_idx_dict, personality_idx_dict, value_idx_dict)
                     pred_y, _, _ = self.m(x=x, gt_y=gt_y, mode=mode, **kw_ret)
                 else:
@@ -628,7 +667,10 @@ class Model:
         for dial_batch in data_iterator:
             for turn_num, turn_batch in enumerate(dial_batch):
                 x, gt_y, kw_ret = self._convert_batch(turn_batch)
-                if 'VQVAE' in self.cfg.network:
+                if self.cfg.network == 'controlled_VQVAE':
+                    loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss \
+                        = self.m(x=x, gt_y=gt_y, mode='train', phase='all', **kw_ret)
+                elif 'VQVAE' in self.cfg.network:
                     loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss \
                         = self.m(x=x, gt_y=gt_y, mode='train', **kw_ret)
                 elif 'classification' in self.cfg.network:
@@ -757,20 +799,22 @@ class Model:
             param.requires_grad = True
 
     def load_glove_embedding(self):
-        initial_arr = self.m.encoder.embedding.weight.data.cpu().numpy()
+        initial_arr = self.m.decoder.embedding.weight.data.cpu().numpy()
         if self.cfg.glove_path == '':
             embedding_arr =  torch.from_numpy(initial_arr)
         else:
             embedding_arr = torch.from_numpy(self.reader.get_glove_matrix(self.reader.vocab, initial_arr))
+            
+        if self.cfg.network != 'simple_VQVAE':
+            self.m.encoder.embedding.weight.data.copy_(embedding_arr)
+            self.m.encoder.embedding.weight.requires_grad = self.cfg.emb_trainable
+        
+        self.m.decoder.embedding.weight.data.copy_(embedding_arr)
+        self.m.decoder.embedding.weight.requires_grad = self.cfg.emb_trainable
 
-        self.m.encoder.embedding.weight.data.copy_(embedding_arr)
-        self.m.encoder.embedding.weight.requires_grad = self.cfg.emb_trainable
-        if 'seq2seq' in self.cfg.network:
-            self.m.decoder.emb.weight.data.copy_(embedding_arr)
-            self.m.decoder.emb.weight.requires_grad = self.cfg.emb_trainable
-        elif 'VQVAE' or 'CVAE' in self.cfg.network:
-            self.m.decoder.emb.weight.data.copy_(embedding_arr)
-            self.m.decoder.emb.weight.requires_grad = self.cfg.emb_trainable
+        if 'VQVAE' or 'CVAE' in self.cfg.network:
+            self.m.vae_encoder.embedding.weight.data.copy_(embedding_arr)
+            self.m.vae_encoder.embedding.weight.requires_grad = self.cfg.emb_trainable
 
     def count_params(self):
         module_parameters = filter(lambda p: p.requires_grad, self.m.parameters())
@@ -821,7 +865,7 @@ def main(sys_args):
     ret = None
     if args.mode == 'train':
         m.load_glove_embedding()
-        m.train()
+        m.train_higher()
         m.load_model()
         ret, _ = m.validate()
         m.eval(data='test')

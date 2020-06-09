@@ -306,7 +306,7 @@ class RNN_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size,  dropout_rate, vocab, cfg):
         super(RNN_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         if self.cfg.decoder_network == 'LSTM':
             self.rnn = torch.nn.LSTM(embed_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
             init_lstm(self.rnn)
@@ -319,7 +319,7 @@ class RNN_Decoder(torch.nn.Module):
         self.vocab = vocab
 
     def forward(self, m_t_input, last_hidden):
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         _in = m_embed
         _out, last_hidden = self.rnn(_in, last_hidden)
         _enc_out = self.emb_proj(_out)
@@ -331,7 +331,7 @@ class Condition_RNN_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size, condition_size, dropout_rate, vocab, cfg):
         super(Condition_RNN_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         self.rnn = torch.nn.GRU(embed_size+condition_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
         init_gru(self.rnn)
         self.emb_proj = torch.nn.Linear(hidden_size, embed_size)
@@ -340,7 +340,7 @@ class Condition_RNN_Decoder(torch.nn.Module):
         self.vocab = vocab
 
     def forward(self, m_t_input, last_hidden, condition):
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         _in = m_embed
         _out, last_hidden = self.rnn(torch.cat((_in, condition), dim=-1), last_hidden)
         _enc_out = self.emb_proj(_out)
@@ -352,7 +352,7 @@ class Attn_RNN_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size,  dropout_rate, vocab, cfg):
         super(Attn_RNN_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         self.a_attn = Attn(hidden_size)
         self.p_attn = Attn(hidden_size)
         if self.cfg.decoder_network == 'LSTM':
@@ -367,7 +367,7 @@ class Attn_RNN_Decoder(torch.nn.Module):
         self.vocab = vocab
 
     def forward(self, m_t_input, last_hidden, act_enc_out, personality_enc_out):
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         if self.cfg.decoder_network == 'LSTM':
             a_context = self.a_attn(last_hidden[0], act_enc_out)
             if  personality_enc_out is not None:
@@ -393,7 +393,7 @@ class VQVAE(torch.nn.Module):
         self.cfg = cfg
         self.vocab = vocab
         self.average_fn = torch.sum
-        self.encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num, cfg.dropout_rate, cfg)
+        self.vae_encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num, cfg.dropout_rate, cfg)
         if decay > 0.0:
             self.act_vq_vae = VectorQuantizerEMA(cfg, decay)
             self.personality_vq_vae = VectorQuantizerEMA(cfg, decay) if self.cfg.domain == 'personage' else None
@@ -403,14 +403,14 @@ class VQVAE(torch.nn.Module):
             if self.cfg.domain == 'personage':
                 if self.cfg.value_codebook_vocab:
                     emb = torch.nn.Embedding(len(vocab), cfg.emb_size)
-                    emb.weight.data.copy_(self.encoder.embedding.weight.data)
+                    emb.weight.data.copy_(self.vae_encoder.embedding.weight.data)
                     self.personality_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), emb)
                 else:
                     self.personality_vq_vae = VectorQuantizer(cfg)
             if not self.cfg.remove_slot_value:
                 if self.cfg.value_codebook_vocab:
                     emb = torch.nn.Embedding(len(vocab), cfg.emb_size)
-                    emb.weight.data.copy_(self.encoder.embedding.weight.data)
+                    emb.weight.data.copy_(self.vae_encoder.embedding.weight.data)
                     self.value_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), emb)
                 else:
                     self.value_vq_vae = VectorQuantizer(cfg) 
@@ -470,7 +470,7 @@ class VQVAE(torch.nn.Module):
         act_idx = kwargs['act_idx']
 
         batch_size = x.size(1)
-        x_enc_out, (h, c), _ = self.encoder(gt_y, y_len)
+        x_enc_out, (h, c), _ = self.vae_encoder(gt_y, y_len)
         z = torch.cat([h[0], h[1]], dim=-1)
 
         act_z = self.act_mlp(z)
@@ -756,18 +756,18 @@ class Controlled_VQVAE(torch.nn.Module):
             self.eos_m_token = eos_m_token
             self.eos_token_idx = self.vocab.encode(eos_m_token)
 
-    def forward(self, x, gt_y, mode, **kwargs):
+    def forward(self, x, gt_y, mode, phase='all', **kwargs):
         if mode == 'train' or mode == 'valid':
-            loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss = self.forward_turn(x, gt_y, mode, **kwargs)
+            loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss = self.forward_turn(x, gt_y, mode, phase, **kwargs)
             return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
         elif mode == 'getDist':
-            act_encoding, personality_encoding, value_encoding = self.forward_turn(x, gt_y, mode, **kwargs)
+            act_encoding, personality_encoding, value_encoding = self.forward_turn(x, gt_y, mode, phase,**kwargs)
             return act_encoding, personality_encoding, value_encoding
         elif mode == 'test':
-            pred_y, act_pred, personality_pred, _ = self.forward_turn(x, gt_y, mode, **kwargs)
+            pred_y, act_pred, personality_pred, _ = self.forward_turn(x, gt_y, mode, phase,**kwargs)
             return pred_y , act_pred, personality_pred
 
-    def forward_turn(self, x, gt_y, mode, **kwargs):
+    def forward_turn(self, x, gt_y, mode,phase, **kwargs):
         if self.cfg.remove_slot_value == True:
             x_len = kwargs['slot_len']  # batchsize
             x_np = kwargs['slot_np']  # seqlen, batchsize
@@ -896,12 +896,22 @@ class Controlled_VQVAE(torch.nn.Module):
             if self.cfg.domain == 'personage':
                 quantized_personality_z = self.personality_mlp(quantized_z)
                 quantized_personality_loss = self.personality_predictor(quantized_personality_z, personality_idx, mode)
-                if not self.cfg.value_loss:
-                    loss = recon_loss + act_loss + act_vq_loss + personality_vq_loss \
-                   + vocab_vq_loss + quantized_act_loss #+ personality_KLdiv + slot_KLdiv
-                else:                
+
+                if phase == 'ctrl':
+                    loss = recon_loss + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
+                elif phase == 'focus':
+                    loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss 
+                else:
                     loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss \
-                   + vocab_vq_loss + quantized_act_loss + quantized_personality_loss #+ personality_KLdiv + slot_KLdiv
+                   + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
+                    
+                if not self.cfg.value_loss:
+                    if phase == 'ctrl':
+                        loss -= quantized_personality_loss
+                    elif phase == 'focus':
+                        loss -= personality_loss
+                    else:
+                        loss -= (personality_loss+quantized_personality_loss)
                 return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
             elif self.cfg.domain == 'e2e' and not self.cfg.remove_slot_value:
                 quantized_value_loss_list = []
@@ -910,17 +920,31 @@ class Controlled_VQVAE(torch.nn.Module):
                     _loss = self.value_predictor[i](_z, kwargs[k], mode)
                     quantized_value_loss_list.append(_loss)
                 quantized_value_loss = self.average_fn(torch.stack(value_loss_list, dim=0), dim=0)
-                if not self.cfg.value_loss:
-                    loss = recon_loss + act_loss  + act_vq_loss + value_vq_loss \
-                               + vocab_vq_loss + quantized_act_loss 
+                
+                if phase == 'ctrl':
+                    loss = recon_loss + quantized_act_loss + quantized_value_loss + vocab_vq_loss
+                elif phase == 'focus':
+                    loss = recon_loss + act_loss + value_loss + act_vq_loss + value_vq_loss 
                 else:
                     loss = recon_loss + act_loss + value_loss + act_vq_loss + value_vq_loss \
                                + vocab_vq_loss + quantized_act_loss + quantized_value_loss
+    
+                if not self.cfg.value_loss:
+                    if phase == 'ctrl':
+                        loss -= quantized_value_loss
+                    elif phase == 'focus':
+                        loss -= value_loss
+                    else:
+                        loss -= (value_loss+quantized_value_loss)
                 return loss, recon_loss, act_loss, value_loss, act_vq_loss, value_vq_loss
 
             else:
-                loss = recon_loss + act_loss + act_vq_loss \
-                       + vocab_vq_loss + quantized_act_loss  
+                if phase == 'focus':
+                    loss = recon_loss + act_loss + act_vq_loss 
+                elif phase == 'ctrl':
+                    loss = recon_loss + vocab_vq_loss + quantized_act_loss
+                else:
+                    loss = recon_loss + act_loss + act_vq_loss + vocab_vq_loss + quantized_act_loss  
                 return loss, recon_loss, act_loss, None, act_vq_loss, None
 
         else:
@@ -938,13 +962,13 @@ class Controlled_VQVAE(torch.nn.Module):
                     value_quantized_list.append(_sample_emb)
                 value_sample_emb = torch.mean(torch.stack(value_quantized_list, dim=0), dim=0)
                 sample_quantized = torch.cat([act_sample_emb, value_sample_emb], dim=-1)
-                print ('sample_quantized', sample_quantized.size())
+                #print ('sample_quantized', sample_quantized.size())
                 value_quantized_tensor = torch.stack(value_quantized_list, dim=0).squeeze(2)
                 personality_enc_out = torch.cat([value_quantized_tensor.clone().detach(), value_quantized_tensor.clone().detach()], dim=-1)
             else:
                 sample_quantized = torch.cat([act_sample_emb, act_sample_emb], dim=-1)
             if self.cfg.decoder_network == 'LSTM':
-                print ('decoder_h', decoder_h.size())
+                #print ('decoder_h', decoder_h.size())
                 last_hidden = (sample_quantized.transpose(0, 1)+ decoder_h.unsqueeze(0), sample_quantized.transpose(0, 1)+decoder_c.unsqueeze(0))
             else:
                 last_hidden = sample_quantized.transpose(0, 1) + decoder_h.unsqueeze(0)
@@ -2007,7 +2031,7 @@ class Copy_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size, dropout_rate, vocab, cfg):
         super(Copy_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         self.attn_a = Attn(hidden_size)
         self.attn_p = Attn(hidden_size)
         self.gru = torch.nn.GRU(embed_size+2*hidden_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
@@ -2039,7 +2063,7 @@ class Copy_Decoder(torch.nn.Module):
 
     def forward(self, slot_enc_out, slot_np, personality_enc_out, personality_np, m_t_input, last_hidden):
         sparse_u_input = torch.autograd.Variable(self.get_sparse_selective_input(slot_np), requires_grad=False)  #singal encoded sentence
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         a_context = self.attn_a(last_hidden, slot_enc_out)
         if personality_enc_out is not None:
             p_context = self.attn_p(last_hidden, personality_enc_out)
@@ -2072,7 +2096,7 @@ class Simple_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size,  dropout_rate, vocab, cfg):
         super(Simple_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         self.attn_a = Attn(hidden_size)
         self.attn_p = Attn(hidden_size)
         self.gru = torch.nn.GRU(embed_size+2*hidden_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
@@ -2082,7 +2106,7 @@ class Simple_Decoder(torch.nn.Module):
         self.vocab = vocab
 
     def forward(self, slot_enc_out, slot_np, personality_enc_out, personality_np, m_t_input, last_hidden):
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         a_context = self.attn_a(last_hidden, slot_enc_out)
         if personality_enc_out is not None:
             p_context = self.attn_p(last_hidden, personality_enc_out)

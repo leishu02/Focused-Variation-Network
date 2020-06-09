@@ -169,8 +169,8 @@ class Config:
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
-        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+'S'+self.sample
-        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+'S'+self.sample+'TMT'+str(self.text_max_ts)
+        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+"CC"+str(self.commitment_cost).replace('.','d')+'S'+self.sample
+        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+"CC"+str(self.commitment_cost).replace('.','d')+'S'+self.sample+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
@@ -218,8 +218,8 @@ class Config:
             self.result_path += '_delex'
             self.vocab_path += '_delex'
             self.vocab_emb += '_delex'
-        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+'S'+self.sample
-        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+'S'+self.sample+'TMT'+str(self.text_max_ts)
+        self.model_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+"CC"+str(self.commitment_cost).replace('.','d')+'S'+self.sample
+        self.result_path += '_CB'+str(self.codebook_size)+'EL'+str(self.encoder_layer_num)+'BS'+str(self.batch_size)+"CC"+str(self.commitment_cost).replace('.','d')+'S'+self.sample+'TMT'+str(self.text_max_ts)
         if self.beam_search:
             self.result_path += '_beam' + str(self.beam_size)
         self.model_path += '.pkl'
