@@ -163,10 +163,10 @@ class Vocab_VectorQuantizer(torch.nn.Module):
         else:
             self.num_embeddings = cfg.codebook_size
         if emb is not None:
-            self.embedding = emb
+            self._embedding = emb
         else:
-            self.embedding = torch.nn.Embedding(self.num_embeddings, self.embedding_dim)
-            self.embedding.weight.data.uniform_(-1 / self.num_embeddings, 1 / self.num_embeddings)
+            self._embedding = torch.nn.Embedding(self.num_embeddings, self.embedding_dim)
+            self._embedding.weight.data.uniform_(-1 / self.num_embeddings, 1 / self.num_embeddings)
         self.commitment_cost = cfg.commitment_cost
 
     def forward(self, inputs):
@@ -178,8 +178,8 @@ class Vocab_VectorQuantizer(torch.nn.Module):
 
         # Calculate distances
         distances = (torch.sum(flat_input ** 2, dim=1, keepdim=True)
-                     + torch.sum(self.embedding.weight ** 2, dim=1)
-                     - 2 * torch.matmul(flat_input, self.embedding.weight.t()))
+                     + torch.sum(self._embedding.weight ** 2, dim=1)
+                     - 2 * torch.matmul(flat_input, self._embedding.weight.t()))
 
         # Encoding
         encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
@@ -187,7 +187,7 @@ class Vocab_VectorQuantizer(torch.nn.Module):
         encodings.scatter_(1, encoding_indices, 1)
 
         # Quantize and unflatten
-        quantized = torch.matmul(encodings, self.embedding.weight).view(input_shape)
+        quantized = torch.matmul(encodings, self._embedding.weight).view(input_shape)
 
         # Loss
         e_latent_loss = torch.mean((quantized.detach() - inputs) ** 2)
@@ -306,7 +306,7 @@ class RNN_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size,  dropout_rate, vocab, cfg):
         super(RNN_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         if self.cfg.decoder_network == 'LSTM':
             self.rnn = torch.nn.LSTM(embed_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
             init_lstm(self.rnn)
@@ -319,7 +319,7 @@ class RNN_Decoder(torch.nn.Module):
         self.vocab = vocab
 
     def forward(self, m_t_input, last_hidden):
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         _in = m_embed
         _out, last_hidden = self.rnn(_in, last_hidden)
         _enc_out = self.emb_proj(_out)
@@ -331,7 +331,7 @@ class Condition_RNN_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size, condition_size, dropout_rate, vocab, cfg):
         super(Condition_RNN_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         self.rnn = torch.nn.GRU(embed_size+condition_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
         init_gru(self.rnn)
         self.emb_proj = torch.nn.Linear(hidden_size, embed_size)
@@ -340,7 +340,7 @@ class Condition_RNN_Decoder(torch.nn.Module):
         self.vocab = vocab
 
     def forward(self, m_t_input, last_hidden, condition):
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         _in = m_embed
         _out, last_hidden = self.rnn(torch.cat((_in, condition), dim=-1), last_hidden)
         _enc_out = self.emb_proj(_out)
@@ -352,7 +352,7 @@ class Attn_RNN_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size,  dropout_rate, vocab, cfg):
         super(Attn_RNN_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         self.a_attn = Attn(hidden_size)
         self.p_attn = Attn(hidden_size)
         if self.cfg.decoder_network == 'LSTM':
@@ -367,7 +367,7 @@ class Attn_RNN_Decoder(torch.nn.Module):
         self.vocab = vocab
 
     def forward(self, m_t_input, last_hidden, act_enc_out, personality_enc_out):
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         if self.cfg.decoder_network == 'LSTM':
             a_context = self.a_attn(last_hidden[0], act_enc_out)
             if  personality_enc_out is not None:
@@ -392,31 +392,44 @@ class VQVAE(torch.nn.Module):
         super(VQVAE, self).__init__()
         self.cfg = cfg
         self.vocab = vocab
-        self.encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num, cfg.dropout_rate, cfg)
+        self.average_fn = torch.sum
+        self.vae_encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num, cfg.dropout_rate, cfg)
         if decay > 0.0:
             self.act_vq_vae = VectorQuantizerEMA(cfg, decay)
             self.personality_vq_vae = VectorQuantizerEMA(cfg, decay) if self.cfg.domain == 'personage' else None
             self.value_vq_vae = VectorQuantizerEMA(cfg, decay) if not self.cfg.remove_slot_vlaue else None
         else:
             self.act_vq_vae = VectorQuantizer(cfg)
-            self.personality_vq_vae = VectorQuantizer(cfg) if self.cfg.domain == 'personage' else None
-            self.value_vq_vae = VectorQuantizer(cfg) if not self.cfg.remove_slot_value else None
+            if self.cfg.domain == 'personage':
+                if self.cfg.value_codebook_vocab:
+                    emb = torch.nn.Embedding(len(vocab), cfg.emb_size)
+                    emb.weight.data.copy_(self.vae_encoder.embedding.weight.data)
+                    self.personality_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), emb)
+                else:
+                    self.personality_vq_vae = VectorQuantizer(cfg)
+            if not self.cfg.remove_slot_value:
+                if self.cfg.value_codebook_vocab:
+                    emb = torch.nn.Embedding(len(vocab), cfg.emb_size)
+                    emb.weight.data.copy_(self.vae_encoder.embedding.weight.data)
+                    self.value_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), emb)
+                else:
+                    self.value_vq_vae = VectorQuantizer(cfg) 
         self.decoder = RNN_Decoder(len(vocab), cfg.emb_size, 2*cfg.hidden_size, cfg.dropout_rate, vocab, cfg)
         self.act_predictor = MultiLabel_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.act_size, cfg.dropout_rate)
         self.act_mlp = MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
         self.personality_predictor = MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.personality_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
         self.personality_mlp = MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
         if not self.cfg.remove_slot_value and self.cfg.domain == 'e2e':
-            self.value_predictor = [
+            self.value_predictor = torch.nn.ModuleList([
                 MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size / 2), self.cfg.slot_value_size[k]+1,
                                           cfg.dropout_rate)\
                 for k in self.cfg.key_order
-            ]
-            self.value_mlp = [
+            ])
+            self.value_mlp = torch.nn.ModuleList([
                 MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size,
                     cfg.dropout_rate) \
                 for k in self.cfg.key_order
-            ]
+            ])
 
 
         self.dec_loss = torch.nn.NLLLoss(ignore_index=0, reduction='mean')
@@ -457,7 +470,7 @@ class VQVAE(torch.nn.Module):
         act_idx = kwargs['act_idx']
 
         batch_size = x.size(1)
-        x_enc_out, (h, c), _ = self.encoder(gt_y, y_len)
+        x_enc_out, (h, c), _ = self.vae_encoder(gt_y, y_len)
         z = torch.cat([h[0], h[1]], dim=-1)
 
         act_z = self.act_mlp(z)
@@ -478,13 +491,13 @@ class VQVAE(torch.nn.Module):
                 value_vq_loss_list.append(_vq_loss)
                 value_quantized_list.append(_quantized)
                 value_encoding_list.append(_encoding)
-            value_vq_loss = torch.sum(torch.stack(value_vq_loss_list, dim=0), dim = 0)
+            value_vq_loss = self.average_fn(torch.stack(value_vq_loss_list, dim=0), dim = 0)
 
 
         if self.cfg.domain == 'personage':
             quantized = torch.cat([act_quantized, personality_quantized], dim=-1)
         elif self.cfg.domain == 'e2e' and not self.cfg.remove_slot_value:
-            value_quantized = torch.sum(torch.stack(value_quantized_list, dim=0), dim = 0)
+            value_quantized = torch.mean(torch.stack(value_quantized_list, dim=0), dim = 0)
             quantized = torch.cat([act_quantized, value_quantized], dim=-1)
         else:
             quantized = torch.cat([act_quantized, act_quantized], dim=-1)
@@ -509,7 +522,7 @@ class VQVAE(torch.nn.Module):
                 for i, k in enumerate(self.cfg.key_order):
                     _loss = self.value_predictor[i](value_quantized_list[i],  kwargs[k] , mode)
                     value_loss_list.append(_loss)
-                value_loss = torch.sum(torch.stack(value_loss_list, dim=0), dim = 0)
+                value_loss = self.average_fn(torch.stack(value_loss_list, dim=0), dim = 0)
             for t in range(text_length):
                 teacher_forcing = toss_(self.teacher_force)
                 proba, last_hidden, dec_out = self.decoder(text_tm1, last_hidden)
@@ -526,10 +539,16 @@ class VQVAE(torch.nn.Module):
                 torch.log(pred_y.view(-1, pred_y.size(2))), \
                 gt_y.view(-1))
             if self.cfg.domain == 'personage':
-                loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss
+                if not self.cfg.value_loss:
+                    loss = recon_loss + act_loss + act_vq_loss + personality_vq_loss
+                else:
+                    loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss
                 return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
             elif self.cfg.domain == 'e2e' and not self.cfg.remove_slot_value:
-                loss = recon_loss + act_loss + value_loss + act_vq_loss + value_vq_loss
+                if not self.cfg.value_loss:
+                    loss = recon_loss + act_loss  + act_vq_loss + value_vq_loss
+                else:
+                    loss = recon_loss + act_loss + value_loss + act_vq_loss + value_vq_loss
                 return loss, recon_loss, act_loss, value_loss, act_vq_loss, value_vq_loss
             else:
                 loss = recon_loss + act_loss + act_vq_loss
@@ -547,7 +566,7 @@ class VQVAE(torch.nn.Module):
                     _sample_idx = kwargs[k + '_sample_idx']
                     _sample_emb = self.value_vq_vae._embedding(_sample_idx)
                     value_quantized_list.append(_sample_emb)
-                value_sample_emb = torch.sum(torch.stack(value_quantized_list, dim=0), dim=0)
+                value_sample_emb = torch.mean(torch.stack(value_quantized_list, dim=0), dim=0)
                 sample_quantized = torch.cat([act_sample_emb, value_sample_emb], dim=-1)
             else:
                 sample_quantized = torch.cat([act_sample_emb, act_sample_emb], dim=-1)
@@ -687,7 +706,7 @@ class Controlled_VQVAE(torch.nn.Module):
         super(Controlled_VQVAE, self).__init__()
         self.cfg = cfg
         self.vocab = vocab
-
+        self.average_fn = torch.sum
         self.vae_encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num, cfg.dropout_rate, cfg)
         self.vocab_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), self.vae_encoder.embedding)
         self.encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
@@ -698,24 +717,36 @@ class Controlled_VQVAE(torch.nn.Module):
             self.value_vq_vae = VectorQuantizerEMA(cfg, decay) if not self.cfg.remove_slot_vlaue else None
         else:
             self.act_vq_vae = VectorQuantizer(cfg)
-            self.personality_vq_vae = VectorQuantizer(cfg) if self.cfg.domain == 'personage' else None
-            self.value_vq_vae = VectorQuantizer(cfg) if not self.cfg.remove_slot_value else None
+            if self.cfg.domain == 'personage':
+                if self.cfg.value_codebook_vocab:
+                    emb = torch.nn.Embedding(len(vocab), cfg.emb_size)
+                    emb.weight.data.copy_(self.encoder.embedding.weight.data)
+                    self.personality_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), emb)
+                else:
+                    self.personality_vq_vae = VectorQuantizer(cfg)
+            if not self.cfg.remove_slot_value:
+                if self.cfg.value_codebook_vocab:
+                    emb = torch.nn.Embedding(len(vocab), cfg.emb_size)
+                    emb.weight.data.copy_(self.encoder.embedding.weight.data)
+                    self.value_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), emb)
+                else:
+                    self.value_vq_vae = VectorQuantizer(cfg) 
         self.decoder = Attn_RNN_Decoder(len(vocab), cfg.emb_size, 2*cfg.hidden_size, cfg.dropout_rate, vocab, cfg)
         self.act_predictor = MultiLabel_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.act_size, cfg.dropout_rate)
         self.personality_predictor = MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size/2), cfg.personality_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
         self.act_mlp = MLP(2*cfg.hidden_size, 4*cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate)
         self.personality_mlp = MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
         if not self.cfg.remove_slot_value and self.cfg.domain == 'e2e':
-            self.value_predictor = [
+            self.value_predictor = torch.nn.ModuleList([
                 MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size / 2), self.cfg.slot_value_size[k]+1,
                                           cfg.dropout_rate)\
                 for k in self.cfg.key_order
-            ]
-            self.value_mlp = [
+            ])
+            self.value_mlp = torch.nn.ModuleList([
                 MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size,
                     cfg.dropout_rate) \
                 for k in self.cfg.key_order
-            ]
+            ])
         self.dec_loss = torch.nn.NLLLoss(ignore_index=0, reduction='mean')
         self.max_ts = cfg.text_max_ts
         self.beam_search = cfg.beam_search
@@ -725,18 +756,18 @@ class Controlled_VQVAE(torch.nn.Module):
             self.eos_m_token = eos_m_token
             self.eos_token_idx = self.vocab.encode(eos_m_token)
 
-    def forward(self, x, gt_y, mode, **kwargs):
+    def forward(self, x, gt_y, mode, phase='all', **kwargs):
         if mode == 'train' or mode == 'valid':
-            loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss = self.forward_turn(x, gt_y, mode, **kwargs)
+            loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss = self.forward_turn(x, gt_y, mode, phase, **kwargs)
             return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
         elif mode == 'getDist':
-            act_encoding, personality_encoding, value_encoding = self.forward_turn(x, gt_y, mode, **kwargs)
+            act_encoding, personality_encoding, value_encoding = self.forward_turn(x, gt_y, mode, phase,**kwargs)
             return act_encoding, personality_encoding, value_encoding
         elif mode == 'test':
-            pred_y, act_pred, personality_pred, _ = self.forward_turn(x, gt_y, mode, **kwargs)
+            pred_y, act_pred, personality_pred, _ = self.forward_turn(x, gt_y, mode, phase,**kwargs)
             return pred_y , act_pred, personality_pred
 
-    def forward_turn(self, x, gt_y, mode, **kwargs):
+    def forward_turn(self, x, gt_y, mode,phase, **kwargs):
         if self.cfg.remove_slot_value == True:
             x_len = kwargs['slot_len']  # batchsize
             x_np = kwargs['slot_np']  # seqlen, batchsize
@@ -774,7 +805,7 @@ class Controlled_VQVAE(torch.nn.Module):
                 value_vq_loss_list.append(_vq_loss)
                 value_quantized_list.append(_quantized)
                 value_encoding_list.append(_encoding)
-            value_vq_loss = torch.sum(torch.stack(value_vq_loss_list, dim=0), dim = 0)
+            value_vq_loss = self.average_fn(torch.stack(value_vq_loss_list, dim=0), dim = 0)
 
         if self.cfg.domain == 'personage':
             personality_enc_out, personality_hidden, personality_emb = self.encoder(personality_seq, personality_len, enc_out='cat')
@@ -784,12 +815,13 @@ class Controlled_VQVAE(torch.nn.Module):
             personality_enc_out = None
             slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, enc_out='cat')
             if self.cfg.domain == 'e2e' and not self.cfg.remove_slot_value:
-                value_quantized = torch.sum(torch.stack(value_quantized_list, dim=0), dim=0)
+                value_quantized = torch.mean(torch.stack(value_quantized_list, dim=0), dim=0)
                 quantized = torch.cat([act_quantized, value_quantized], dim=-1)
             else:
                 quantized = torch.cat([act_quantized, act_quantized], dim=-1)
 
         decoder_c = torch.cat([slot_hidden[1][0], slot_hidden[1][1]], dim =-1)
+        decoder_h = torch.cat([slot_hidden[0][0], slot_hidden[0][1]], dim =-1)
         text_tm1 = cuda_(torch.autograd.Variable(torch.ones(1, batch_size).long()), self.cfg)  # GO token
         text_length = gt_y.size(0)
         text_dec_proba = []
@@ -804,9 +836,9 @@ class Controlled_VQVAE(torch.nn.Module):
 
         elif mode == 'train':
             if self.cfg.decoder_network == 'LSTM':
-                last_hidden = (quantized.unsqueeze(0), decoder_c.unsqueeze(0))
+                last_hidden = (quantized.unsqueeze(0) + decoder_h.unsqueeze(0), quantized.unsqueeze(0) + decoder_c.unsqueeze(0))
             else:
-                last_hidden = quantized.unsqueeze(0)
+                last_hidden = quantized.unsqueeze(0) + decoder_h.unsqueeze(0)
             act_loss = self.act_predictor(act_quantized, act_idx, mode)
             if self.cfg.domain == 'personage':
                 personality_loss = self.personality_predictor(personality_quantized, personality_idx, mode)
@@ -815,9 +847,9 @@ class Controlled_VQVAE(torch.nn.Module):
                 for i, k in enumerate(self.cfg.key_order):
                     _loss = self.value_predictor[i](value_quantized_list[i],  kwargs[k] , mode)
                     value_loss_list.append(_loss)
-                value_loss = torch.sum(torch.stack(value_loss_list, dim=0), dim = 0)
+                value_loss = self.average_fn(torch.stack(value_loss_list, dim=0), dim = 0)
                 value_quantized_tensor = torch.stack(value_quantized_list, dim=0)
-                personality_enc_out = torch.cat([value_quantized_tensor, value_quantized_tensor], dim=-1)
+                personality_enc_out = torch.cat([value_quantized_tensor.clone().detach(), value_quantized_tensor.clone().detach()], dim=-1)
 
             ##prepare dist from encoding
 
@@ -851,7 +883,7 @@ class Controlled_VQVAE(torch.nn.Module):
                 torch.log(pred_y.view(-1, pred_y.size(2))), \
                 gt_y.view(-1))
             #
-            vocab_vq_loss = torch.mean(torch.stack(text_vq_loss_s, dim=0))
+            vocab_vq_loss = self.average_fn(torch.stack(text_vq_loss_s, dim=0))
             vocab_quantized_dec_outs = torch.cat(text_quantized_dec_outs, dim=0)
 
             #feed text_vq to encoder
@@ -864,8 +896,22 @@ class Controlled_VQVAE(torch.nn.Module):
             if self.cfg.domain == 'personage':
                 quantized_personality_z = self.personality_mlp(quantized_z)
                 quantized_personality_loss = self.personality_predictor(quantized_personality_z, personality_idx, mode)
-                loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss \
-                   + vocab_vq_loss + quantized_act_loss + quantized_personality_loss #+ personality_KLdiv + slot_KLdiv
+
+                if phase == 'ctrl':
+                    loss = recon_loss + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
+                elif phase == 'focus':
+                    loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss 
+                else:
+                    loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss \
+                   + vocab_vq_loss + quantized_act_loss + quantized_personality_loss
+                    
+                if not self.cfg.value_loss:
+                    if phase == 'ctrl':
+                        loss -= quantized_personality_loss
+                    elif phase == 'focus':
+                        loss -= personality_loss
+                    else:
+                        loss -= (personality_loss+quantized_personality_loss)
                 return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
             elif self.cfg.domain == 'e2e' and not self.cfg.remove_slot_value:
                 quantized_value_loss_list = []
@@ -873,14 +919,32 @@ class Controlled_VQVAE(torch.nn.Module):
                     _z = self.value_mlp[i](quantized_z)
                     _loss = self.value_predictor[i](_z, kwargs[k], mode)
                     quantized_value_loss_list.append(_loss)
-                quantized_value_loss = torch.sum(torch.stack(value_loss_list, dim=0), dim=0)
-                loss = recon_loss + act_loss + value_loss + act_vq_loss + value_vq_loss \
-                           + vocab_vq_loss + quantized_act_loss + quantized_value_loss
+                quantized_value_loss = self.average_fn(torch.stack(value_loss_list, dim=0), dim=0)
+                
+                if phase == 'ctrl':
+                    loss = recon_loss + quantized_act_loss + quantized_value_loss + vocab_vq_loss
+                elif phase == 'focus':
+                    loss = recon_loss + act_loss + value_loss + act_vq_loss + value_vq_loss 
+                else:
+                    loss = recon_loss + act_loss + value_loss + act_vq_loss + value_vq_loss \
+                               + vocab_vq_loss + quantized_act_loss + quantized_value_loss
+    
+                if not self.cfg.value_loss:
+                    if phase == 'ctrl':
+                        loss -= quantized_value_loss
+                    elif phase == 'focus':
+                        loss -= value_loss
+                    else:
+                        loss -= (value_loss+quantized_value_loss)
                 return loss, recon_loss, act_loss, value_loss, act_vq_loss, value_vq_loss
 
             else:
-                loss = recon_loss + act_loss + act_vq_loss \
-                       + vocab_vq_loss + quantized_act_loss  
+                if phase == 'focus':
+                    loss = recon_loss + act_loss + act_vq_loss 
+                elif phase == 'ctrl':
+                    loss = recon_loss + vocab_vq_loss + quantized_act_loss
+                else:
+                    loss = recon_loss + act_loss + act_vq_loss + vocab_vq_loss + quantized_act_loss  
                 return loss, recon_loss, act_loss, None, act_vq_loss, None
 
         else:
@@ -896,17 +960,18 @@ class Controlled_VQVAE(torch.nn.Module):
                     _sample_idx = kwargs[k + '_sample_idx']
                     _sample_emb = self.value_vq_vae._embedding(_sample_idx)
                     value_quantized_list.append(_sample_emb)
-                value_sample_emb = torch.sum(torch.stack(value_quantized_list, dim=0), dim=0)
+                value_sample_emb = torch.mean(torch.stack(value_quantized_list, dim=0), dim=0)
                 sample_quantized = torch.cat([act_sample_emb, value_sample_emb], dim=-1)
-
+                #print ('sample_quantized', sample_quantized.size())
                 value_quantized_tensor = torch.stack(value_quantized_list, dim=0).squeeze(2)
-                personality_enc_out = torch.cat([value_quantized_tensor, value_quantized_tensor], dim=-1)
+                personality_enc_out = torch.cat([value_quantized_tensor.clone().detach(), value_quantized_tensor.clone().detach()], dim=-1)
             else:
                 sample_quantized = torch.cat([act_sample_emb, act_sample_emb], dim=-1)
             if self.cfg.decoder_network == 'LSTM':
-                last_hidden = (sample_quantized.transpose(0, 1), decoder_c.unsqueeze(0))
+                #print ('decoder_h', decoder_h.size())
+                last_hidden = (sample_quantized.transpose(0, 1)+ decoder_h.unsqueeze(0), sample_quantized.transpose(0, 1)+decoder_c.unsqueeze(0))
             else:
-                last_hidden = sample_quantized.transpose(0, 1)
+                last_hidden = sample_quantized.transpose(0, 1) + decoder_h.unsqueeze(0)
             act_pred = self.act_predictor(act_quantized, act_idx, mode)
             if self.cfg.domain == 'personage':
                 personality_pred = self.personality_predictor(personality_quantized, personality_idx, mode)
@@ -1055,6 +1120,7 @@ class Focused_VQVAE(torch.nn.Module):
         super(Focused_VQVAE, self).__init__()
         self.cfg = cfg
         self.vocab = vocab
+        self.average_fn = torch.sum
         self.vae_encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
                                               cfg.dropout_rate, cfg)
         self.encoder = LSTMDynamicEncoder(len(vocab), cfg.emb_size, cfg.hidden_size, cfg.encoder_layer_num,
@@ -1065,8 +1131,20 @@ class Focused_VQVAE(torch.nn.Module):
             self.value_vq_vae = VectorQuantizer(cfg) if not self.cfg.remove_slot_value else None
         else:
             self.act_vq_vae = VectorQuantizer(cfg)
-            self.personality_vq_vae = VectorQuantizer(cfg) if self.cfg.domain == 'personage' else None
-            self.value_vq_vae = VectorQuantizer(cfg) if not self.cfg.remove_slot_value else None
+            if self.cfg.domain == 'personage':
+                if self.cfg.value_codebook_vocab:
+                    emb = torch.nn.Embedding(len(vocab), cfg.emb_size)
+                    emb.weight.data.copy_(self.encoder.embedding.weight.data)
+                    self.personality_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), emb)
+                else:
+                    self.personality_vq_vae = VectorQuantizer(cfg)
+            if not self.cfg.remove_slot_value:
+                if self.cfg.value_codebook_vocab:
+                    emb = torch.nn.Embedding(len(vocab), cfg.emb_size)
+                    emb.weight.data.copy_(self.encoder.embedding.weight.data)
+                    self.value_vq_vae = Vocab_VectorQuantizer(cfg, len(vocab), emb)
+                else:
+                    self.value_vq_vae = VectorQuantizer(cfg) 
         self.decoder = Attn_RNN_Decoder(len(vocab), cfg.emb_size, 2 * cfg.hidden_size, cfg.dropout_rate, vocab, cfg)
         self.act_predictor = MultiLabel_Classification(cfg.hidden_size, int(cfg.hidden_size / 2), cfg.act_size,
                                                        cfg.dropout_rate)
@@ -1076,16 +1154,16 @@ class Focused_VQVAE(torch.nn.Module):
         self.personality_mlp = MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size, cfg.dropout_rate) if self.cfg.domain == 'personage' else None
 
         if not self.cfg.remove_slot_value and self.cfg.domain == 'e2e':
-            self.value_predictor = [
+            self.value_predictor = torch.nn.ModuleList([
                 MultiClass_Classification(cfg.hidden_size, int(cfg.hidden_size / 2), self.cfg.slot_value_size[k]+1,
                                           cfg.dropout_rate)\
                 for k in self.cfg.key_order
-            ]
-            self.value_mlp = [
+            ])
+            self.value_mlp = torch.nn.ModuleList([
                 MLP(2 * cfg.hidden_size, 4 * cfg.hidden_size, cfg.hidden_size,
                     cfg.dropout_rate) \
                 for k in self.cfg.key_order
-            ]
+            ])
 
         self.dec_loss = torch.nn.NLLLoss(ignore_index=0, reduction='mean')
         self.max_ts = cfg.text_max_ts
@@ -1148,7 +1226,7 @@ class Focused_VQVAE(torch.nn.Module):
                 value_vq_loss_list.append(_vq_loss)
                 value_quantized_list.append(_quantized)
                 value_encoding_list.append(_encoding)
-            value_vq_loss = torch.sum(torch.stack(value_vq_loss_list, dim=0), dim = 0)
+            value_vq_loss = self.average_fn(torch.stack(value_vq_loss_list, dim=0), dim = 0)
 
 
         text_tm1 = cuda_(torch.autograd.Variable(torch.ones(1, batch_size).long()), self.cfg)  # GO token
@@ -1169,12 +1247,13 @@ class Focused_VQVAE(torch.nn.Module):
             personality_enc_out = None
             slot_enc_out, slot_hidden, slot_emb = self.encoder(x, x_len, enc_out='cat')
             if self.cfg.domain == 'e2e' and not self.cfg.remove_slot_value:
-                value_quantized = torch.sum(torch.stack(value_quantized_list, dim=0), dim=0)
+                value_quantized = torch.mean(torch.stack(value_quantized_list, dim=0), dim=0)
                 quantized = torch.cat([act_quantized, value_quantized], dim=-1)
             else:
                 quantized = torch.cat([act_quantized, act_quantized], dim=-1)
 
         decoder_c = torch.cat([slot_hidden[1][0], slot_hidden[1][1]], dim=-1)
+        decoder_h =  torch.cat([slot_hidden[0][0], slot_hidden[0][1]], dim=-1)
         '''
         personality_emb_copy = cuda_(torch.autograd.Variable(self.personality_vq_vae._embedding.weight.data.clone()), self.cfg).repeat(batch_size, 1, 1).transpose(0, 1)
         act_emb_copy = cuda_(torch.autograd.Variable(self.act_vq_vae._embedding.weight.data.clone()), self.cfg).repeat(batch_size, 1, 1).transpose(0, 1)
@@ -1188,9 +1267,9 @@ class Focused_VQVAE(torch.nn.Module):
 
         elif mode == 'train':
             if self.cfg.decoder_network == 'LSTM':
-                last_hidden = (quantized.unsqueeze(0), decoder_c.unsqueeze(0))
+                last_hidden = (quantized.unsqueeze(0) + decoder_h.unsqueeze(0), quantized.unsqueeze(0) + decoder_c.unsqueeze(0))
             else:
-                last_hidden = quantized.unsqueeze(0)
+                last_hidden = quantized.unsqueeze(0) + decoder_h.unsqueeze(0)
             act_loss = self.act_predictor(act_quantized, act_idx, mode)
             if self.cfg.domain == 'personage':
                 personality_loss = self.personality_predictor(personality_quantized, personality_idx, mode)
@@ -1199,9 +1278,9 @@ class Focused_VQVAE(torch.nn.Module):
                 for i, k in enumerate(self.cfg.key_order):
                     _loss = self.value_predictor[i](value_quantized_list[i],  kwargs[k] , mode)
                     value_loss_list.append(_loss)
-                value_loss = torch.sum(torch.stack(value_loss_list, dim=0), dim = 0)
+                value_loss = self.average_fn(torch.stack(value_loss_list, dim=0), dim = 0)
                 value_quantized_tensor = torch.stack(value_quantized_list, dim=0)
-                personality_enc_out = torch.cat([value_quantized_tensor, value_quantized_tensor], dim=-1)
+                personality_enc_out = torch.cat([value_quantized_tensor.clone().detach(), value_quantized_tensor.clone().detach()], dim=-1)
             ##prepare dist from encoding
             '''
             personality_encoding_dist = getDist(personality_idx, personality_encoding)
@@ -1228,10 +1307,16 @@ class Focused_VQVAE(torch.nn.Module):
                 torch.log(pred_y.view(-1, pred_y.size(2))), \
                 gt_y.view(-1))
             if self.cfg.domain == 'personage':
-                loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss
+                if not self.cfg.value_loss:
+                    loss = recon_loss + act_loss + act_vq_loss + personality_vq_loss
+                else:
+                    loss = recon_loss + act_loss + personality_loss + act_vq_loss + personality_vq_loss
                 return loss, recon_loss, act_loss, personality_loss, act_vq_loss, personality_vq_loss
             elif self.cfg.domain == 'e2e' and not self.cfg.remove_slot_value:
-                loss = recon_loss + act_loss + value_loss + act_vq_loss + value_vq_loss
+                if not self.cfg.value_loss:
+                    loss = recon_loss + act_loss + act_vq_loss + value_vq_loss
+                else:
+                    loss = recon_loss + act_loss + value_loss + act_vq_loss + value_vq_loss
                 return loss, recon_loss, act_loss, value_loss, act_vq_loss, value_vq_loss
             else:
                 loss = recon_loss + act_loss + act_vq_loss 
@@ -1249,17 +1334,17 @@ class Focused_VQVAE(torch.nn.Module):
                     _sample_idx = kwargs[k + '_sample_idx']
                     _sample_emb = self.value_vq_vae._embedding(_sample_idx)
                     value_quantized_list.append(_sample_emb)
-                value_sample_emb = torch.sum(torch.stack(value_quantized_list, dim=0), dim=0)
+                value_sample_emb = torch.mean(torch.stack(value_quantized_list, dim=0), dim=0)
                 sample_quantized = torch.cat([act_sample_emb, value_sample_emb], dim=-1)
 
                 value_quantized_tensor = torch.stack(value_quantized_list, dim=0).squeeze(2)
-                personality_enc_out = torch.cat([value_quantized_tensor, value_quantized_tensor], dim=-1)
+                personality_enc_out = torch.cat([value_quantized_tensor.clone().detach(), value_quantized_tensor.clone().detach()], dim=-1)
             else:
                 sample_quantized = torch.cat([act_sample_emb, act_sample_emb], dim=-1)
             if self.cfg.decoder_network == 'LSTM':
-                last_hidden = (sample_quantized.transpose(0, 1), decoder_c.unsqueeze(0))
+                last_hidden = (sample_quantized.transpose(0, 1) + decoder_h.unsqueeze(0), sample_quantized.transpose(0, 1) + decoder_c.unsqueeze(0))
             else:
-                last_hidden = sample_quantized.transpose(0, 1)
+                last_hidden = sample_quantized.transpose(0, 1) + decoder_h.unsqueeze(0)
             act_pred = self.act_predictor(act_quantized, act_idx, mode)
             if self.cfg.domain == 'personage':
                 personality_pred = self.personality_predictor(personality_quantized, personality_idx, mode)
@@ -1946,7 +2031,7 @@ class Copy_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size, dropout_rate, vocab, cfg):
         super(Copy_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         self.attn_a = Attn(hidden_size)
         self.attn_p = Attn(hidden_size)
         self.gru = torch.nn.GRU(embed_size+2*hidden_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
@@ -1978,7 +2063,7 @@ class Copy_Decoder(torch.nn.Module):
 
     def forward(self, slot_enc_out, slot_np, personality_enc_out, personality_np, m_t_input, last_hidden):
         sparse_u_input = torch.autograd.Variable(self.get_sparse_selective_input(slot_np), requires_grad=False)  #singal encoded sentence
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         a_context = self.attn_a(last_hidden, slot_enc_out)
         if personality_enc_out is not None:
             p_context = self.attn_p(last_hidden, personality_enc_out)
@@ -2011,7 +2096,7 @@ class Simple_Decoder(torch.nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size,  dropout_rate, vocab, cfg):
         super(Simple_Decoder, self).__init__()
         self.cfg = cfg
-        self.emb = torch.nn.Embedding(vocab_size, embed_size)
+        self.embedding = torch.nn.Embedding(vocab_size, embed_size)
         self.attn_a = Attn(hidden_size)
         self.attn_p = Attn(hidden_size)
         self.gru = torch.nn.GRU(embed_size+2*hidden_size, hidden_size, 1, dropout=dropout_rate, bidirectional=False)
@@ -2021,7 +2106,7 @@ class Simple_Decoder(torch.nn.Module):
         self.vocab = vocab
 
     def forward(self, slot_enc_out, slot_np, personality_enc_out, personality_np, m_t_input, last_hidden):
-        m_embed = self.emb(m_t_input)
+        m_embed = self.embedding(m_t_input)
         a_context = self.attn_a(last_hidden, slot_enc_out)
         if personality_enc_out is not None:
             p_context = self.attn_p(last_hidden, personality_enc_out)
