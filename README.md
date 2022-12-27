@@ -1,3 +1,7 @@
+# Code for Paper 
+[Controllable text generation with focused variation](https://arxiv.org/pdf/2009.12046.pdf) EMNLP 2020 Findings
+
+
 # Setup
 
 Install requirements:
