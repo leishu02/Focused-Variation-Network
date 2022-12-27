@@ -1,5 +1,5 @@
-# Code for Paper 
-[Controllable text generation with focused variation](https://arxiv.org/pdf/2009.12046.pdf) EMNLP 2020 Findings
+# EMNLP2020_FVN Focused-Variation-Network
+Code for paper [Controllable text generation with focused variation](https://arxiv.org/pdf/2009.12046.pdf) EMNLP 2020 Findings
 
 
 # Setup
